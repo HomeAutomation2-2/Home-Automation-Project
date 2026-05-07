@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admmin
+      POSTGRES_PASSWORD: admin
       POSTGRES_DB: blue-lock-db
     ports:
       - "5432:5432"
