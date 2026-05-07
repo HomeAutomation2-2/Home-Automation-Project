@@ -1,0 +1,20 @@
+# CODEOWNERS
+# Owneri reali pentru acest repository.
+
+# Default owners for entire repository
+* @crisanalex15 @TheMarc05 @jovanni0
+
+# Web stack
+/COD/WEBSERVRS/backend/ @crisanalex15 @TheMarc05 @jovanni0
+/COD/WEBSERVRS/frontend/ @crisanalex15 @TheMarc05 @jovanni0
+
+# Database
+/COD/DATABASES/ @crisanalex15 @TheMarc05 @jovanni0
+
+# Mobile and embedded
+/COD/SMARTPON/ @crisanalex15 @TheMarc05 @jovanni0
+/COD/ARDUINOU/ @crisanalex15 @TheMarc05 @jovanni0
+/COD/SENZWIRES/ @crisanalex15 @TheMarc05 @jovanni0
+
+# Documentation
+/DOCS/ @crisanalex15 @TheMarc05 @jovanni0
