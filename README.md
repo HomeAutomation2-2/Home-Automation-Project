@@ -82,15 +82,15 @@ Conform normativului de management (regula de 8 caractere):
 
 | Nume și Prenume | Rol în Proiect | Responsabilitate Principală |
 | :--- | :--- | :--- |
-| **Crișan Alex-Florin** | Programator Șef | Arhitectură Sistem & Integrare NestJS |
-| **Cucea Ioan** | Adjunct | Managementul Bazei de Date & API |
-| **Cioclei Ana-Maria** | Secretar | Documentație SPE/PRO & Management OPI |
-| **Covaciu Sebastian-Adelin** | Programator | Dezvoltare Embedded (ESP-IDF) |
-| **Cocotian Riana-Alexandra**| Programator | Frontend Next.js & UX Design |
-| **Cornea Theodor-Marc** | Programator | Aplicație Mobilă Svelte |
-| **Cornaschi Cosmin-Ionut** | Programator | Logica de Control Termic (Histerezis) |
-| **Crișan Laurentiu-Andrei**| Programator | Securitate BLE & Numeric Comparison |
-| **Cismariu Tudor-Șerban** | Programator | Testare Automată & DevOps (CI/CD) |
+| **Crișan Alex-Florin** | Programator Șef | CLOUD |
+| **Cucea Ioan** | Adjunct | MOBILE |
+| **Cioclei Ana-Maria** | Secretar | Web |
+| **Covaciu Sebastian-Adelin** | Programator | Cloud |
+| **Cocotian Riana-Alexandra**| Programator | Web |
+| **Cornea Theodor-Marc** | Programator | WEB |
+| **Cornaschi Cosmin-Ionut** | Programator | Mobile |
+| **Crișan Laurentiu-Andrei**| Programator | Embedded |
+| **Cismariu Tudor-Șerban** | Programator | EMBEDDED |
 
 ---
 *Acest proiect este dezvoltat sub licența **MIT**. Toate documentele oficiale pot fi găsite în folderul `/DOCS` conform structurii de management solicitate.*
