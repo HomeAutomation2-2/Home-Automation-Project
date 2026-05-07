@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_proiect
+    restart: always
+    environment:
+      POSTGRES_USER: user_baza_date
+      POSTGRES_PASSWORD: parola_secreta
+      POSTGRES_DB: nume_proiect_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
