@@ -15,7 +15,13 @@
         class:locked={is_locked === true}
         class:unlocked={is_locked === false}
         class:unknown={is_locked === undefined}
-    >Locked</div>
+    >
+        {
+            is_locked === undefined 
+                ? "Unknown" 
+                : is_locked ? "Locked" : "Unlocked"
+        }
+    </div>
 </div>
 
 

@@ -1,18 +1,36 @@
-<script>
+<script lang="ts">
+    import { onDestroy } from "svelte";
     import AccessButton from "../../components/access-button.svelte";
     import ErrorBanner from "../../components/error-banner.svelte";
     import LocationSelector from "../../components/location-selector.svelte";
-    import Navbar from "../../components/navbar.svelte";
     import TopbarAccess from "../../components/topbar-access.svelte";
+    import AccesDirection from "../../components/acces-direction.svelte";
 
     let has_connection = $state(false)
+    let door_state = $state(0);
+    let timeout: ReturnType<typeof setTimeout>;
+
+    $effect(() => {
+        if (door_state === 1) 
+        {
+            timeout = setTimeout(() => 
+            {
+                const is_unlocked = Math.random() < 0.5;
+                door_state = is_unlocked ? 2 : 3
+            }, 1000);
+        }
+    });
+
+	onDestroy(() => {
+		clearTimeout(timeout);
+	});
 </script>
 
 
 
 
 <TopbarAccess 
-    is_locked={true}
+    is_locked={door_state === 3 ? undefined : door_state !== 2 }
 />
 
 {#if !has_connection}
@@ -28,12 +46,16 @@
     </div>
     
     <div class="access-button-wrapper">
-        <AccessButton />
+        <AccessButton bind:state={door_state}/>
     </div>
     
     <div class="indicator-wrapper">
         <span>You are now:</span>
-        <LocationSelector />
+        {#if door_state !== 2}
+            <LocationSelector />
+        {:else}
+            <AccesDirection />
+        {/if}
     </div>
 </div>
     
@@ -59,7 +81,9 @@
 
     .access-button-wrapper {
         display: flex;
-        padding: 0 20%;
+        align-items: center;
+        justify-content: center;
+        padding: 0 15%;
     }
 
     .indicator-wrapper {
