@@ -6,9 +6,10 @@
     /**
      * `state` can be:
      *  - 0 = locked
-     *  - 1 = waiting for confirmation
+     *  - 1 = waiting for unlock confirmation
      *  - 2 = unlocked
      *  - 3 = errored
+     *  - 4 = waiting for lock confirmation
      */
     let {
         state = $bindable(0),
@@ -57,7 +58,7 @@
         }
 
         if (state === 2) 
-            state = 0
+            state = 4
         else if (state === 3)
             state = 1
     }
@@ -68,13 +69,13 @@
 <div
     class="progress"
     class:unlocked={state === 2}
-    class:awaiting-confirmation={state === 1}
+    class:awaiting-confirmation={state === 1 || state === 4}
     class:errored={state === 3}
     ontransitionend={handleTransitionEnd}
 >
     <button
         class:unlocked={state === 2}
-        class:awaiting-confirmation={state === 1}
+        class:awaiting-confirmation={state === 1 || state === 4}
         class:errored={state === 3}
         onpointerdown={handlePointerDown}
         onpointerup={handlePointerUp}
@@ -84,13 +85,13 @@
         {#if state === 0}
             <LockKeyhole width={48} height={48} />
             <span>Hold to unlock</span>
-        {:else if state === 1}
+        {:else if state === 1 || state === 4}
             <LockKeyhole width={48} height={48} />
             <span>Unlocking...</span>
         {:else if state === 2}
             <LockKeyholeOpen width={48} height={48} />
             <span>Tap to lock</span>
-        {:else}
+        {:else if state === 3}
             <CurcleX width={48} height={48} />
             <div class="info">
                 <span>Error</span>
@@ -161,6 +162,7 @@
         & span {
             font-weight: 500;
             font-size: 1.4rem;
+            text-align: center;
         }
 
         &:active {

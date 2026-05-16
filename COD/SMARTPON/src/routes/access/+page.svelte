@@ -1,39 +1,130 @@
 <script lang="ts">
-    import { onDestroy } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import AccessButton from "../../components/access-button.svelte";
     import ErrorBanner from "../../components/error-banner.svelte";
     import LocationSelector from "../../components/location-selector.svelte";
     import TopbarAccess from "../../components/topbar-access.svelte";
     import AccesDirection from "../../components/acces-direction.svelte";
+    import { bluetoothService } from "../../services/bluetooth-service";
+    import { Preferences } from "@capacitor/preferences";
 
-    let has_connection = $state(false)
-    let door_state = $state(0)
-    let timeout: ReturnType<typeof setTimeout>
-    let is_bluetooth_available = $state(true)
     
+    let has_server_connection = $state(false)
+    let has_EPS_connection = $state(false)
+    let door_state = $state(0)
+    let is_bluetooth_available = $state(true)
+    let polling: ReturnType<typeof setInterval>
     let is_door_locked: boolean|undefined = $derived.by( () => 
     {
-        if (!has_connection) return undefined
+        if (!has_EPS_connection) return undefined
 
         if (door_state === 3) return undefined
         
         return door_state !== 2
     })
 
-    $effect(() => {
-        if (door_state === 1) 
-        {
-            timeout = setTimeout(() => 
-            {
-                const is_unlocked = Math.random() < 0.5;
-                door_state = is_unlocked ? 2 : 3
-            }, 1000);
-        }
-    });
 
-	onDestroy(() => {
-		clearTimeout(timeout);
-	});
+    /**
+     * Watch the state of the door button for changes.
+    */
+    $effect( () => 
+    {
+        if (door_state === 1 || door_state === 4) 
+        {
+            sendAccessRequest(door_state === 1 ? 'unlock' : 'lock')
+        }
+    })
+
+
+    /**
+     * Trigger access request based on the state of the door button.
+     * @param action
+     */
+    async function sendAccessRequest(action: 'lock' | 'unlock') 
+    {
+        try {
+            const response = await bluetoothService.sendAccessRequest({
+                code: 'placeholder_code',
+                action
+            })
+
+            if (response.request_status === 'success') 
+            {
+                door_state = response.door_status === 'unlocked' ? 2 : 0
+            } 
+            else 
+            {
+                door_state = 3
+            }
+        } 
+        catch(e) {
+            door_state = 3
+        }
+    }
+
+
+    /**
+     * Try connecting to the ESP, first in silent mode then with a dialog.
+     */
+    async function tryConnect() 
+    {
+        const connected = await bluetoothService.connectSilent()
+        
+        if (connected) 
+        {
+            has_EPS_connection = true
+            return
+        }
+
+        const saved = await Preferences.get({ key: 'ble_device_id' })
+
+        if (!saved.value) 
+        {
+            try {
+                await bluetoothService.connectWithDialog()
+                has_EPS_connection = true
+            } 
+            catch(e) {
+                has_EPS_connection = false
+            }
+        } 
+        else 
+        {
+            has_EPS_connection = false
+        }
+    }
+
+
+    /**
+     * Check the Bluetooth availability, then try connect and keep checking the connection
+     * every 2.5 seconds.
+    */
+    onMount(async () => 
+    {
+        is_bluetooth_available = await bluetoothService.isAvailable()
+
+        if (!is_bluetooth_available) return
+
+        await tryConnect()
+
+        polling = setInterval(async () => 
+        {
+            if (!bluetoothService.isConnected()) 
+            {
+                await tryConnect()
+            }
+        }, 2500)
+    })
+
+
+    /**
+     * Disconnect from Bluetooth on page unload.
+    */
+    onDestroy(async () => 
+    {
+        clearInterval(polling)
+        await bluetoothService.disconnect()
+    })
 </script>
 
 
@@ -43,14 +134,23 @@
     is_locked={is_door_locked}
 />
 
-{#if !has_connection}
+{#if !has_server_connection}
     <ErrorBanner 
-        message="Can’t contact server. Functionality is limited."
+        message="Can’t contact to server. Functionality is limited."
     />
 {/if}
 
+
 <div class="wrapper">    
-    {#if is_bluetooth_available}
+    {#if !has_EPS_connection}
+        <div class="error-message">
+            <span class="title">Door connection failed!</span>
+            <div class="error-info">
+                <span>The app cannot connect to the door.</span>
+                <span>This can happen if your device is not in range of the door. You can try getting closer. Connection will be retried in </span>
+            </div>
+        </div>
+    {:else if is_bluetooth_available}
         <div class="date-time">
             <span class="time">15:33</span>
             <span class="date">28 Apr 2026</span>
@@ -77,10 +177,7 @@
             </div>
         </div>
     {/if}
-
-
 </div>
-    
 
 
 <style>
