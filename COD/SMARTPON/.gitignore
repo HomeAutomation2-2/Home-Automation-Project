@@ -22,8 +22,14 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# Android
-android
+# Android - generated
+android/gradle/wrapper/gradle-wrapper.jar
+android/gradlew
+android/gradlew.bat
+android/app/capacitor.build.gradle
+android/capacitor.settings.gradle
+android/app/src/androidTest
+android/app/src/test
 
 # VSCode
 .vscode
