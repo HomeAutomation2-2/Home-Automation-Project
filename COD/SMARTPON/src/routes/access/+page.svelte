@@ -7,8 +7,18 @@
     import AccesDirection from "../../components/acces-direction.svelte";
 
     let has_connection = $state(false)
-    let door_state = $state(0);
-    let timeout: ReturnType<typeof setTimeout>;
+    let door_state = $state(0)
+    let timeout: ReturnType<typeof setTimeout>
+    let is_bluetooth_available = $state(true)
+    
+    let is_door_locked: boolean|undefined = $derived.by( () => 
+    {
+        if (!has_connection) return undefined
+
+        if (door_state === 3) return undefined
+        
+        return door_state !== 2
+    })
 
     $effect(() => {
         if (door_state === 1) 
@@ -30,7 +40,7 @@
 
 
 <TopbarAccess 
-    is_locked={door_state === 3 ? undefined : door_state !== 2 }
+    is_locked={is_door_locked}
 />
 
 {#if !has_connection}
@@ -39,24 +49,36 @@
     />
 {/if}
 
-<div class="wrapper">
-    <div class="date-time">
-        <span class="time">15:33</span>
-        <span class="date">28 Apr 2026</span>
-    </div>
-    
-    <div class="access-button-wrapper">
-        <AccessButton bind:state={door_state}/>
-    </div>
-    
-    <div class="indicator-wrapper">
-        <span>You are now:</span>
-        {#if door_state !== 2}
-            <LocationSelector />
-        {:else}
-            <AccesDirection />
-        {/if}
-    </div>
+<div class="wrapper">    
+    {#if is_bluetooth_available}
+        <div class="date-time">
+            <span class="time">15:33</span>
+            <span class="date">28 Apr 2026</span>
+        </div>
+
+        <div class="access-button-wrapper">
+            <AccessButton bind:state={door_state}/>
+        </div>
+        
+        <div class="indicator-wrapper">
+            <span>You are now:</span>
+            {#if door_state !== 2}
+                <LocationSelector />
+            {:else}
+                <AccesDirection />
+            {/if}
+        </div>
+    {:else}
+        <div class="error-message">
+            <span class="title">BT unavailable!</span>
+            <div class="error-info">
+                <span>The app cannot access Bluetooth.</span>
+                <span>This can happen if your device does not have a module, it is disabled or the app does not have the required permissions.</span>
+            </div>
+        </div>
+    {/if}
+
+
 </div>
     
 
@@ -96,5 +118,26 @@
             text-align: center;
             color: var(--text-secondary);
         }
+    }
+
+    .error-message {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        padding: 0 24px;
+
+        & .title {
+            font-size: 2rem;
+            font-weight: 500;
+            text-align: center;
+        }
+    }
+
+    .error-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+        color: var(--text-secondary);
     }
 </style>
