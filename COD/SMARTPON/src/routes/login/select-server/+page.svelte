@@ -1,8 +1,27 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
+    import Button from "@components/button.svelte";
     import InputText from "@components/input-text.svelte";
+    import type { LoginController } from "@controllers/login.controller.svelte";
+    import { authStore } from "@services/auth-store.svelte";
+    import { getContext, onMount } from "svelte";
 
-    let server_url = $state("")
-    let error_message = "Error message here"
+    onMount( () => 
+    {
+        if (authStore.isAuthenticated)
+            goto("/dashboard")
+    })
+    
+    const login_controller = getContext("login-controller") as LoginController
+
+    async function onContinue()
+    {
+        const is_alive = await login_controller.testServerConnection()
+
+        if (!is_alive) return
+
+        goto("/login/select-account")
+    }
 </script>
 
 
@@ -16,14 +35,19 @@
 
         <InputText 
             label="URL"
-            usage="server URL"
+            usage="url"
             placeholder="http(s)://"
-            value={server_url}
-            error={error_message}
+            bind:value={login_controller.given_server_url}
+            error={login_controller.select_server_error}
         />
     </div>
 
-    <button>Continue</button>
+    <Button
+        text="Continue"
+        onClick={onContinue}
+        type="primary"
+        is_disabled={login_controller.is_url_invalid}
+    />
 </div>
 
 

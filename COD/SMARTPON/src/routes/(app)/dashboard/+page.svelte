@@ -1,7 +1,15 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
     import ErrorBanner from "@components/error-banner.svelte";
     import LightCard from "@components/light-card.svelte";
+    import { authStore } from "@services/auth-store.svelte";
+    import { onMount } from "svelte";
 
+    onMount( () =>
+    {
+        if (!authStore.isAuthenticated)
+            goto("/login/select-server")
+    })
     
     let has_server_connection = $state(false)
     let is_on = $state(true)

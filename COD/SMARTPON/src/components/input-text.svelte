@@ -21,6 +21,7 @@
 <div class="input-text">
     <label for={usage}>{label}</label>
     <input
+        id={usage}
         type={type}
         placeholder={placeholder}
         bind:value={value}
