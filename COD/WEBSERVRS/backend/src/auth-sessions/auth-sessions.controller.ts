@@ -10,8 +10,7 @@ export class AuthSessionsController
 
 
     @Post("login")
-    async login(@Body() body: { phone_number: string, password_plaintext: string }
-    ) 
+    async login(@Body() body: { phone_number: string, password_plaintext: string }) 
     {
         return await this.authSessionsService.login(body.phone_number, body.password_plaintext)
     }

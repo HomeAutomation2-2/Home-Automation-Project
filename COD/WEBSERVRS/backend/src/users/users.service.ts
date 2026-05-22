@@ -1,9 +1,11 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from "bcrypt"
 import { CreateUserDto } from './dto/create-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
+import { UserResponse } from './dto/user-response.dto';
 
 
 @Injectable()
@@ -33,7 +35,7 @@ export class UsersService
      * @param new_user An object containing the new user data.
      * @returns The new user.
      */
-    async registerAccount(new_user: CreateUserDto): Promise<Omit<User, 'passwordHash'>>
+    async registerAccount(new_user: CreateUserDto): Promise<UserResponse>
     {
         const existing_user = await this.user_repository.findOne({
             where: [{ phone: new_user.phone }, { cnp: new_user.cnp }]
@@ -53,6 +55,34 @@ export class UsersService
         const saved_user = await this.user_repository.save(user)
         const { passwordHash, ...user_without_hash } = saved_user
         
-        return user_without_hash
+        return user_without_hash as UserResponse
+    }
+
+
+    /**
+     * Log in a user.
+     * @param user_data The user's phone number and password.
+     * @returns The user data.
+     */
+    async loginUser(user_data: LoginUserDto): Promise<UserResponse>
+    {
+        const existing_user = await this.user_repository.findOne({
+            where: [{ phone: user_data.phone }]
+        })
+
+        if (!existing_user)
+            throw new NotFoundException("Could not find a user with this phone number")
+
+        const is_password_valid = await bcrypt.compare(user_data.password_plaintext, existing_user.passwordHash)
+
+        if (!is_password_valid)
+            throw new UnauthorizedException("Invalid credentials")
+
+        if (existing_user.isSuspended)
+            throw new UnauthorizedException("Account suspended")
+
+        const { passwordHash, sessions, ...user_without_hash } = existing_user
+        
+        return user_without_hash as UserResponse
     }
 }

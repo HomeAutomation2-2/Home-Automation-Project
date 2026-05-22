@@ -8,6 +8,7 @@ import { HeatingLoopsModule } from './heating-loops/heating-loops.module';
 import { TemperatureProgramsModule } from './temperature-programs/temperature-programs.module';
 import { TemperatureReadingsModule } from './temperature-readings/temperature-readings.module';
 import { EventsModule } from './events/events.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -30,5 +31,6 @@ import { EventsModule } from './events/events.module';
     TemperatureReadingsModule,
     EventsModule,
   ],
+  controllers: [AppController]
 })
 export class AppModule {}
