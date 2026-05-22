@@ -1,5 +1,5 @@
 <script lang="ts">
-    import InputText from "../../../components/input-text.svelte";
+    import InputText from "@components/input-text.svelte";
 
     let server_name = "example.server.com"
     let error_message = "Error message here"

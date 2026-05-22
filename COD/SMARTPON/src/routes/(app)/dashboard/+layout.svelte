@@ -1,5 +1,6 @@
 <script lang="ts">
-    import TopbarTabbed from "../../components/topbar-tabbed.svelte";
+    import TopbarTabbed from '@components/topbar-tabbed.svelte';
+
 
     let { children } = $props()
 </script>

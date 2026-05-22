@@ -1,6 +1,4 @@
 <script lang="ts">
-    import Building from "./icons/building.svelte";
-    import House from "./icons/house.svelte";
     import SquareArrowRightEnter from "./icons/square-arrow-right-enter.svelte";
     import SquareArrowRightExit from "./icons/square-arrow-right-exit.svelte";
 

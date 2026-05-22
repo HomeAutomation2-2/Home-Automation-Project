@@ -1,6 +1,6 @@
 <script lang="ts">
-    import ErrorBanner from "../../components/error-banner.svelte";
-    import LightCard from "../../components/light-card.svelte";
+    import ErrorBanner from "@components/error-banner.svelte";
+    import LightCard from "@components/light-card.svelte";
 
     
     let has_server_connection = $state(false)

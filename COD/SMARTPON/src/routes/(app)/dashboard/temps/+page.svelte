@@ -1,7 +1,8 @@
 <script lang="ts">
-    import ErrorBanner from "../../../components/error-banner.svelte";
-    import RoomStatusCard from "../../../components/room-status-card.svelte";
+    import ErrorBanner from "@components/error-banner.svelte";
+    import RoomStatusCard from "@components/room-status-card.svelte";
 
+    
     let has_server_connection = $state(false)
 </script>
 

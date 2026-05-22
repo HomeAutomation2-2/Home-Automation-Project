@@ -1,11 +1,11 @@
 <script lang="ts">
     import { onDestroy, onMount } from "svelte";
-    import AccessButton from "../../components/access-button.svelte";
-    import ErrorBanner from "../../components/error-banner.svelte";
-    import LocationSelector from "../../components/location-selector.svelte";
-    import TopbarAccess from "../../components/topbar-access.svelte";
-    import AccesDirection from "../../components/acces-direction.svelte";
-    import { bluetoothService } from "../../services/bluetooth-service";
+    import AccessButton from "@components/access-button.svelte";
+    import ErrorBanner from "@components/error-banner.svelte";
+    import LocationSelector from "@components/location-selector.svelte";
+    import TopbarAccess from "@components/topbar-access.svelte";
+    import AccesDirection from "@components/acces-direction.svelte";
+    import { bluetoothService } from "@services/bluetooth-service";
     import { Preferences } from "@capacitor/preferences";
 
     

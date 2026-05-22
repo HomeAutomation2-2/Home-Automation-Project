@@ -1,6 +1,15 @@
 import { sveltekit } from '@sveltejs/kit/vite';
+import path from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	plugins: [sveltekit()]
+	plugins: [sveltekit()],
+	resolve: {
+		alias: {
+			"@components": path.resolve("src/components"),
+			"@controllers": path.resolve("src/controllers"),
+			"@services": path.resolve("src/services"),
+			"@data-types": path.resolve("src/types"),
+		}
+	}
 });
