@@ -1,5 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RoomsModule } from './rooms/rooms.module';
+import { UsersModule } from './users/users.module';
+import { AuthSessionsModule } from './auth-sessions/auth-sessions.module';
+import { LightZonesModule } from './light-zones/light-zones.module';
+import { HeatingLoopsModule } from './heating-loops/heating-loops.module';
+import { TemperatureProgramsModule } from './temperature-programs/temperature-programs.module';
+import { TemperatureReadingsModule } from './temperature-readings/temperature-readings.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -13,6 +21,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       autoLoadEntities: true, // Încarcă automat entitățile pe care le definim în cod
       synchronize: false,    // Rămâne false; baza de date este creată prin scriptul SQL din DATABASE
     }),
+    RoomsModule,
+    UsersModule,
+    AuthSessionsModule,
+    LightZonesModule,
+    HeatingLoopsModule,
+    TemperatureProgramsModule,
+    TemperatureReadingsModule,
+    EventsModule,
   ],
 })
 export class AppModule {}
