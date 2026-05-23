@@ -25,6 +25,10 @@
         align-items: center;
         background-color: #E1E5B6;
         padding: 8px 16px;
+
+        position: sticky;
+        top: 0;
+        left: 0;
     }
 
     .secondary {

@@ -95,6 +95,7 @@ export class LoginController
             }
 
             authStore.setToken(data.token)
+            authStore.setUrl(this.working_server_url)
             this.login_error = ""
             
             return true;

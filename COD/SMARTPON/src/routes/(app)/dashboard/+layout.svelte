@@ -19,5 +19,17 @@
 
 
 
+
 <style>
+    .content {
+        position: relative;
+        flex: 1;
+        overflow-y: auto;
+        scrollbar-width: none;
+	    -ms-overflow-style: none;
+    }
+
+    .content::-webkit-scrollbar {
+        display: none;
+    }
 </style>

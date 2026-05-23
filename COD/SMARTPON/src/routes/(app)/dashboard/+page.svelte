@@ -1,7 +1,12 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import BottomSheet from "@components/bottom-sheet.svelte";
+    import CategoryHeader from "@components/category-header.svelte";
     import ErrorBanner from "@components/error-banner.svelte";
+    import FloatingActionButton from "@components/floating-action-button.svelte";
+    import LightCardPlaceholder from "@components/light-card-placeholder.svelte";
     import LightCard from "@components/light-card.svelte";
+    import { LightsController } from "@controllers/lights.controller.svelte";
     import { authStore } from "@services/auth-store.svelte";
     import { onMount } from "svelte";
 
@@ -10,9 +15,21 @@
         if (!authStore.isAuthenticated)
             goto("/login/select-server")
     })
+
+    const lights_controller = new LightsController()
+    lights_controller.loadLights()
     
     let has_server_connection = $state(false)
-    let is_on = $state(true)
+    let new_zone_parent_id = $state<number|undefined>(undefined)
+    let new_zone_name = $state("")
+
+    async function addZone()
+    {
+        const result = await lights_controller.addZone(new_zone_name, new_zone_parent_id!)
+
+        if (result)
+            new_zone_parent_id = undefined
+    }
 </script>
 
 
@@ -25,29 +42,40 @@
 {/if}
 
 <div class="cards">
-    <div class="location">
-        <span>Living room</span>
-        <LightCard 
-            name="Main lights" 
-            is_on={is_on}
-            onClick={ () => is_on = !is_on }
-        />
-    </div>
-
-    <div class="location">
-        <span>Hallway</span>
-        <LightCard 
-            name="Wall lamps" 
-        />
-    </div>
-
-    <div class="location">
-        <span>Bedroom</span>
-        <LightCard 
-            name="Main lights" 
-        />
-    </div>
+    {#each lights_controller.rooms as room (room.id)}
+        <div class="location">
+            <CategoryHeader 
+                name={room.name}
+                onClick={ () => new_zone_parent_id = room.id }
+            />
+            
+            {#if lights_controller.getZonesForRoom(room.id).length === 0}
+                <LightCardPlaceholder />
+            {/if}
+            {#each lights_controller.getZonesForRoom(room.id) as zone (zone.id)}
+                <LightCard 
+                    name={zone.name}
+                    onClick={ () => lights_controller.toggleZone(zone.id, zone.is_on) }
+                    is_on={zone.is_on}
+                />
+            {/each}
+        </div>
+    {/each}
 </div>
+<div class="fab">
+    <FloatingActionButton 
+        href="/add-room"
+    />
+</div>
+{#if new_zone_parent_id !== undefined}
+    <BottomSheet 
+        zone_name={lights_controller.getRoomName(new_zone_parent_id)}
+        bind:value={new_zone_name}
+        onAdd={addZone}
+        onCancel={ () => { new_zone_parent_id = undefined; new_zone_name = "" } }
+        error_message={lights_controller.zone_error}
+    />
+{/if}
 
 
 <style>
@@ -62,9 +90,11 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
+    }
 
-        & span {
-            padding: 0 12px;
-        }
+    .fab {
+        position: fixed;
+        right: 24px;
+        bottom: 90px;
     }
 </style>

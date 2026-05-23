@@ -1,5 +1,6 @@
 <script lang="ts">
     import ErrorBanner from "@components/error-banner.svelte";
+    import FloatingActionButton from "@components/floating-action-button.svelte";
     import RoomStatusCard from "@components/room-status-card.svelte";
 
     
@@ -41,6 +42,12 @@
         enabled={false}
     />
 </div>
+<div class="fab">
+    <FloatingActionButton 
+        href="/add-room"
+    />
+</div>
+
 
 
 <style>
@@ -49,5 +56,11 @@
         flex-direction: column;
         padding: 16px;
         gap: 8px;
+    }
+
+    .fab {
+        position: absolute;
+        right: 24px;
+        bottom: 24px;
     }
 </style>
