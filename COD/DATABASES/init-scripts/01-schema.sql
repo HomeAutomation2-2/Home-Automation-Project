@@ -22,17 +22,19 @@ CREATE TABLE IF NOT EXISTS auth_sessions (
     expires_at TIMESTAMP    NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS rooms (
-    id   SERIAL       PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS temperature_programs (
     id          SERIAL       PRIMARY KEY,
     name        VARCHAR(100) NOT NULL,
-    target_temp DECIMAL(4,2) NOT NULL,
-    hysteresis  DECIMAL(3,2) NOT NULL,
     schedule    JSONB        NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rooms (
+    id              SERIAL       PRIMARY KEY,
+    name            VARCHAR(100) NOT NULL,
+    temp_program_id INT          REFERENCES temperature_programs(id) ON DELETE SET NULL,
+    is_heating      BOOLEAN      DEFAULT false,
+    offset_value    DECIMAL(3,2) DEFAULT 0.0,
+    current_temp    DECIMAL(4,2) DEFAULT 0.0
 );
 
 CREATE TABLE IF NOT EXISTS light_zones (
@@ -43,18 +45,9 @@ CREATE TABLE IF NOT EXISTS light_zones (
     last_changed_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS heating_loops (
-    id         SERIAL       PRIMARY KEY,
-    room_id    INT          REFERENCES rooms(id) ON DELETE CASCADE,
-    name       VARCHAR(100) NOT NULL,
-    program_id INT          REFERENCES temperature_programs(id) ON DELETE SET NULL,
-    is_heating BOOLEAN      DEFAULT false,
-    offset_val DECIMAL(3,2) DEFAULT 0.0
-);
-
 CREATE TABLE IF NOT EXISTS temperature_readings (
     id         SERIAL       PRIMARY KEY,
-    loop_id    INT          REFERENCES heating_loops(id) ON DELETE CASCADE,
+    loop_id    INT          REFERENCES rooms(id) ON DELETE CASCADE,
     value      DECIMAL(4,2) NOT NULL,
     occured_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
@@ -66,3 +59,9 @@ CREATE TABLE IF NOT EXISTS events (
     payload    JSONB       NOT NULL,
     occured_at TIMESTAMP   DEFAULT CURRENT_TIMESTAMP
 );
+
+-- CREATE TABLE IF NOT EXISTS home_settings (
+--     id              SERIAL       PRIMARY KEY,
+--     hysteresis      DECIMAL(3,2) NOT NULL,
+--     antifreeze_temp DECIMAL(4,2) NOT NULL
+-- );

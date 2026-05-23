@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, BadRequestException } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
 
 
 
@@ -11,11 +10,11 @@ export class RoomsController
     constructor(private readonly roomsService: RoomsService) {}
 
 
-    // @Post()
-    // create(@Body() createRoomDto: CreateRoomDto) 
-    // {
-    //     return this.roomsService.create(createRoomDto);
-    // }
+    @Post()
+    create(@Body() room_request: CreateRoomDto) 
+    {
+        return this.roomsService.createRoom(room_request)
+    }
 
 
     @Get()
@@ -25,10 +24,26 @@ export class RoomsController
     }
 
 
-    // @Get(':id')
-    // findOne(@Param('id') id: string) {
-    //   return this.roomsService.findOne(+id);
-    // }
+    @Get(':id')
+    findOne(@Param('id', ParseIntPipe) id: number) 
+    {
+        return this.roomsService.getRoom(id)
+    }
+
+
+    /* Update the room temp program ID */
+    @Patch(":id/temp-program")
+    setTempProgramId(
+        @Param("id", ParseIntPipe) id: number,
+        @Body("temp_program_id") program_id: number | null, 
+    ) {
+        if (program_id !== null && isNaN(Number(program_id))) 
+            throw new BadRequestException('`temp_program_id` must be a number or null')
+
+        const clean_program_id = program_id !== null ? Number(program_id) : null
+        
+        return this.roomsService.setTempProgramId(id, clean_program_id)
+    }
 
     // @Patch(':id')
     // update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
