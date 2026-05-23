@@ -1,5 +1,5 @@
 <script lang="ts">
-    type ButtonType = "primary" | "secondary" | "passive"
+    type ButtonType = "primary" | "secondary" | "passive" | "border"
 
     let {
         text = "Button",
@@ -26,6 +26,7 @@
         class:primary={type === "primary"}
         class:secondary={type === "secondary"}
         class:passive={type === "passive"}
+        class:border={type === "border"}
         class:disabled={is_disabled}
         class:fill={fill}
         aria-disabled={is_disabled}
@@ -43,6 +44,7 @@
         class:primary={type === "primary"}
         class:secondary={type === "secondary"}
         class:passive={type === "passive"}
+        class:border={type === "border"}
         class:disabled={is_disabled}
         disabled={is_disabled}
         class:fill={fill}
@@ -86,6 +88,11 @@
         border: 1px solid var(--dividers);
         color: var(--text-secondary);
         box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .border {
+        background-color: transparent;
+        border: 1px solid var(--text-secondary);
     }
 
     .disabled {

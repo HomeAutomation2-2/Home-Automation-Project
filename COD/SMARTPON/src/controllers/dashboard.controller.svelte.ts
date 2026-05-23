@@ -4,7 +4,7 @@ import { authStore } from "@services/auth-store.svelte";
 
 
 
-export class LightsController
+export class DashboardController
 {
     rooms = $state<Room[]>([])
     zones = $state<LightZone[]>([])

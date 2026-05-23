@@ -6,7 +6,7 @@
     import FloatingActionButton from "@components/floating-action-button.svelte";
     import LightCardPlaceholder from "@components/light-card-placeholder.svelte";
     import LightCard from "@components/light-card.svelte";
-    import { LightsController } from "@controllers/lights.controller.svelte";
+    import { DashboardController } from "@controllers/dashboard.controller.svelte";
     import { authStore } from "@services/auth-store.svelte";
     import { onMount } from "svelte";
 
@@ -16,7 +16,7 @@
             goto("/login/select-server")
     })
 
-    const lights_controller = new LightsController()
+    const lights_controller = new DashboardController()
     lights_controller.loadLights()
     
     let has_server_connection = $state(false)
