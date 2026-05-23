@@ -3,6 +3,7 @@
     import Flame from "./icons/flame.svelte";
 
     let {
+        href,
         room_name = "Room name",
         current_temp = 0.0,
         target_temp = 0.0,
@@ -12,6 +13,7 @@
         is_heating = false,
         enabled = true,
     } : {
+        href?: string
         room_name?: string
         current_temp?: number
         target_temp?: number
@@ -25,7 +27,10 @@
 
 
 
-<button class="room-status-card">
+<a 
+    href={href}
+    class="room-status-card"
+>
     <div class="top">
         <span>{room_name}</span>
         <ChevronRight />
@@ -65,7 +70,7 @@
             <span>tap to change</span>
         </div>
     {/if}
-</button>
+</a>
 
 
 

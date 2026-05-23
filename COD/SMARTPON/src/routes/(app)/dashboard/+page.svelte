@@ -8,16 +8,16 @@
     import LightCard from "@components/light-card.svelte";
     import { DashboardController } from "@controllers/dashboard.controller.svelte";
     import { authStore } from "@services/auth-store.svelte";
-    import { onMount } from "svelte";
+    import { getContext, onMount } from "svelte";
 
+    
     onMount( () =>
     {
         if (!authStore.isAuthenticated)
             goto("/login/select-server")
     })
 
-    const lights_controller = new DashboardController()
-    lights_controller.loadLights()
+    const dash_controller = getContext("dashboard-controller") as DashboardController
     
     let has_server_connection = $state(false)
     let new_zone_parent_id = $state<number|undefined>(undefined)
@@ -25,7 +25,7 @@
 
     async function addZone()
     {
-        const result = await lights_controller.addZone(new_zone_name, new_zone_parent_id!)
+        const result = await dash_controller.addZone(new_zone_name, new_zone_parent_id!)
 
         if (result)
             new_zone_parent_id = undefined
@@ -42,20 +42,20 @@
 {/if}
 
 <div class="cards">
-    {#each lights_controller.rooms as room (room.id)}
+    {#each dash_controller.rooms as room (room.id)}
         <div class="location">
             <CategoryHeader 
                 name={room.name}
                 onClick={ () => new_zone_parent_id = room.id }
             />
             
-            {#if lights_controller.getZonesForRoom(room.id).length === 0}
+            {#if dash_controller.getZonesForRoom(room.id).length === 0}
                 <LightCardPlaceholder />
             {/if}
-            {#each lights_controller.getZonesForRoom(room.id) as zone (zone.id)}
+            {#each dash_controller.getZonesForRoom(room.id) as zone (zone.id)}
                 <LightCard 
                     name={zone.name}
-                    onClick={ () => lights_controller.toggleZone(zone.id, zone.is_on) }
+                    onClick={ () => dash_controller.toggleZone(zone.id, zone.is_on) }
                     is_on={zone.is_on}
                 />
             {/each}
@@ -69,11 +69,11 @@
 </div>
 {#if new_zone_parent_id !== undefined}
     <BottomSheet 
-        zone_name={lights_controller.getRoomName(new_zone_parent_id)}
+        zone_name={dash_controller.getRoomName(new_zone_parent_id)}
         bind:value={new_zone_name}
         onAdd={addZone}
         onCancel={ () => { new_zone_parent_id = undefined; new_zone_name = "" } }
-        error_message={lights_controller.zone_error}
+        error_message={dash_controller.zone_error}
     />
 {/if}
 

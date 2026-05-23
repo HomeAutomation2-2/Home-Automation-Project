@@ -2,11 +2,14 @@
     import ErrorBanner from "@components/error-banner.svelte";
     import FloatingActionButton from "@components/floating-action-button.svelte";
     import RoomStatusCard from "@components/room-status-card.svelte";
+    import { DashboardController } from "@controllers/dashboard.controller.svelte";
+    import { getContext } from "svelte";
 
+    
+    const dash_controller = getContext("dashboard-controller") as DashboardController
     
     let has_server_connection = $state(false)
 </script>
-
 
 
 
@@ -17,31 +20,28 @@
 {/if}
 
 <div class="cards">
-    <RoomStatusCard 
-        room_name="Bedroom"
-        current_temp={19.1}
-        target_temp={21}
-        program="Winter school week"
-        next_temp={20}
-        next_temp_time="16:30"
-        is_heating={true}
-    />
-
-    <RoomStatusCard 
-        room_name="Living room"
-        current_temp={19}
-        target_temp={17}
-        program="Winter"
-        next_temp={19}
-        next_temp_time="13:00"
-        is_heating={false}
-    />
-
-    <RoomStatusCard 
-        room_name="Guest room"
-        enabled={false}
-    />
+    {#each dash_controller.getRoomsForTempDisplay() as room (room.id)}
+        {#if room.temp_program_id === null}
+            <RoomStatusCard 
+                href={`/room/${room.id}`}
+                room_name={room.name}
+                enabled={false}
+            />
+        {:else}
+            <RoomStatusCard 
+                href={`/room/${room.id}`}
+                room_name={room.name}
+                current_temp={room.current_temp}
+                target_temp={room.target_temp}
+                program={room.program_name}
+                next_temp={room.next_temp}
+                next_temp_time={room.next_temp_time}
+                is_heating={room.is_heating}
+            />
+        {/if}
+    {/each}
 </div>
+
 <div class="fab">
     <FloatingActionButton 
         href="/add-room"

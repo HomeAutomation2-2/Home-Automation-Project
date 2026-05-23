@@ -1,8 +1,15 @@
 <script lang="ts">
     import TopbarTabbed from '@components/topbar-tabbed.svelte';
+    import { DashboardController } from '@controllers/dashboard.controller.svelte';
+    import { setContext } from 'svelte';
 
 
     let { children } = $props()
+
+    const dash_controller = new DashboardController()
+    dash_controller.loadLights()
+
+    setContext("dashboard-controller", dash_controller)
 </script>
 
 

@@ -33,7 +33,20 @@
     --orange-text: hsl(15 65% 40%);
     --green-text: hsl(125 70% 20%);
     --green-background: hsl(125 50% 35%);
+    --t17-19: hsl(220 70% 65%);
+    --t17-19-secondary: hsl(220 45% 75%);
+    --t19-21: hsl(100 35% 50%);
+    --t19-21-secondary: hsl(100 30% 70%);
+    --t21-23: hsl(45 60% 50%);
+    --t21-23-secondary: hsl(45 50% 65%);
+    --t23-25: hsl(15 60% 55%);
+    --t23-25-secondary: hsl(15 40% 70%);
+    --off: hsl(0 0% 70%);
+    --off-secondary: hsl(0 0% 80%);
+    --antifreeze: hsl(193 50% 60%);
+    --antifreeze-secondary: hsl(193 30% 75%);
 }
+
 html,
 body {
     margin: 0;

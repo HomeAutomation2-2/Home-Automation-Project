@@ -11,7 +11,9 @@
 
 
 <div class="topbar-back">
-    <button>
+    <button
+        onclick={ () => history.back() }
+    >
         <ChevronLeft />
     </button>
     <span>{page_name}</span>

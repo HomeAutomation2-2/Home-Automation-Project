@@ -131,15 +131,13 @@ export class CreateTempController
 
         const payload = {
             name: this.program_name,
-            schedule: {
-                periods: this.periods.map(period => ({
-                    days: period.days,
-                    slots: period.slots.map(slot => ({
-                        time: slot.time,
-                        temp: typeof slot.temp === 'string' ? slot.temp.toLowerCase() : slot.temp
-                    }))
+            schedule: this.periods.map(period => ({
+                days: period.days,
+                slots: period.slots.map(slot => ({
+                    time: slot.time,
+                    temp: typeof slot.temp === 'string' ? slot.temp.toLowerCase() : slot.temp
                 }))
-            }
+            }))
         };
 
         try {
