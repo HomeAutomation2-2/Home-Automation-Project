@@ -1,7 +1,10 @@
-import { Body, Controller, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { SessionGuard } from './guards/session.guard';
+import { GetUser } from './decorators/get-user.decorator';
+import { User } from './entities/user.entity';
 
 
 
@@ -30,5 +33,14 @@ export class UsersController
         this.logger.log(`Login request for user: ${user_data}`)
         
         return await this.usersService.loginUser(user_data)
+    }
+
+    @Get('me')
+    @UseGuards(SessionGuard)
+    getMe(@GetUser() user: User) 
+    {
+        const { passwordHash, sessions, btCodeHash, ...safeUser } = user;
+        
+        return safeUser;
     }
 }
