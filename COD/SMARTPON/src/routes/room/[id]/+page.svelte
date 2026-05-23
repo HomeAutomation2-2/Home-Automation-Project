@@ -5,6 +5,7 @@
     import TempProgram from "@components/temp-program.svelte";
     import TopbarBack from "@components/topbar-back.svelte";
     import { RoomTempController } from "@controllers/room-temp-program.controller.svelte";
+    import { userStore } from "@services/user-profile";
 
     const controller = new RoomTempController()
     
@@ -54,12 +55,25 @@
         />
     {/each}
 
-    <button
-        class="disable-heating"
-        onclick={ () => controller.setRoomProgram(null) }
-    >
-        Disable heating
-    </button>
+    <div class="action-buttons">
+        {#if userStore.isAdmin()}
+            <a 
+                class="add-program"
+                href="/add-temp-program"
+            >
+                Add program
+            </a>
+        {/if}
+
+        {#if controller.room?.temp_program_id !== null}
+            <button
+                class="disable-heating"
+                onclick={ () => controller.setRoomProgram(null) }
+            >
+                Disable heating
+            </button>
+        {/if}
+    </div>
 </div>
 
 
@@ -84,10 +98,22 @@
         color: var(--text-secondary);
     }
 
+    .action-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 4px;
+    }
+
     .disable-heating {
         color: var(--red-text);
         text-decoration: underline;
         text-align: center;
-        align-self: center;
+        flex: 1;
+    }
+
+    .add-program {
+        text-decoration: underline;
+        text-align: center;
+        flex: 1;
     }
 </style>

@@ -9,6 +9,9 @@ class AuthStore
     _server_url_key = "server_url"
     server_url: string = $state("")
 
+    _is_admin_key = "is_user_admin"
+    is_admin: boolean = false;
+
     isAuthenticated: boolean = $derived(this.token !== "")
 
 
@@ -16,10 +19,16 @@ class AuthStore
     {
         try {
             const saved_token = await Preferences.get({ key: this._token_key })
-            if (saved_token.value) this.token = saved_token.value
+            if (saved_token.value) 
+                this.token = saved_token.value
 
             const saved_url = await Preferences.get({ key: this._server_url_key })
-            if (saved_url.value) this.server_url = saved_url.value
+            if (saved_url.value) 
+                this.server_url = saved_url.value
+
+            const saved_status = await Preferences.get({ key: this._is_admin_key })
+            if (saved_status.value) 
+                this.is_admin = saved_status.value === "true"
         } 
         catch (e) {
             console.error("Error while reading the session token:", e)
@@ -38,6 +47,12 @@ class AuthStore
     {
         this.server_url = new_url
         await Preferences.set({ key: this._server_url_key, value: new_url })
+    }
+
+    async setStatus(is_admin: boolean)
+    {
+        this.is_admin = is_admin
+        await Preferences.set({ key: this._is_admin_key, value: is_admin ? "true" : "false" })
     }
 
 

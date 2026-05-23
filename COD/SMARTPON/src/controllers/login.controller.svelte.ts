@@ -1,4 +1,5 @@
 import { authStore } from "@services/auth-store.svelte"
+import { userStore } from "@services/user-profile"
 
 
 export class LoginController
@@ -96,6 +97,18 @@ export class LoginController
 
             authStore.setToken(data.token)
             authStore.setUrl(this.working_server_url)
+            console.log(data.token)
+            const profileFetched = await this.fetchUserProfile(data.token)
+            
+            if (!profileFetched) 
+            {
+                this.login_error = "Login was successful but failed to fetch user data"
+                
+                authStore.logout()
+                
+                return false
+            }
+            
             this.login_error = ""
             
             return true;
@@ -120,5 +133,26 @@ export class LoginController
             new_url = `https://${new_url}`
 
         return new_url
+    }
+
+    async fetchUserProfile(token: string): Promise<boolean> {
+        try {
+            const response = await fetch(`${this.working_server_url}/users/me`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch profile");
+
+            const profileData = await response.json();
+            userStore.setProfile(profileData);
+            return true;
+        } catch (error) {
+            this.login_error = "Failed to load user profile";
+            return false;
+        }
     }
 }

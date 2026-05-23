@@ -67,7 +67,6 @@ export class RoomTempController
             this.room = await room_response.json()
             this.temp_programs = await programs_response.json()
             this.room_program_id = this.room?.temp_program_id ?? null
-            console.log(this.temp_programs)
         } 
         catch (err: any) {
             this.error = err.message || "A network error occurred"
