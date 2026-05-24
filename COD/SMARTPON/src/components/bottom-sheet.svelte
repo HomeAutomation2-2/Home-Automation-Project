@@ -21,9 +21,12 @@
 
 <div 
     class="overlay"
-    // onclick={ (event) => { event.stopPropagation(); onCancel?.() }}
+    onclick={ (event) => { event.stopPropagation(); onCancel?.() }}
 >
-    <div class="bottom-sheet">
+    <div 
+        class="bottom-sheet"
+        onclick={ (event) => event.stopPropagation() }
+    >
         <span>Add a new zone to {zone_name}</span>
     
         <div class="content">

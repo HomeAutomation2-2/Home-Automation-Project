@@ -28,7 +28,10 @@
         const result = await dash_controller.addZone(new_zone_name, new_zone_parent_id!)
 
         if (result)
+        {
             new_zone_parent_id = undefined
+            new_zone_name = ""   
+        }
     }
 </script>
 

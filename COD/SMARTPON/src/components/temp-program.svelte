@@ -116,9 +116,9 @@
         flex-direction: row;
         gap: 2px;
         text-align: center;
+        color: var(--text);
 
         & > * {
-            color: var(--text-inverted);
             font-weight: 500;
             flex: 1;
             padding: 4px 8px;
@@ -137,39 +137,51 @@
 
     .t17-19 {
         background-color: var(--t17-19);
+        color: var(--text-inverted);
     }
     .t19-21 {
         background-color: var(--t19-21);
+        color: var(--text-inverted);
     }
     .t21-23 {
         background-color: var(--t21-23);
+        color: var(--text-inverted);
     }
     .t23-25 {
         background-color: var(--t23-25);
+        color: var(--text-inverted);
     }
     .antifreeze {
         background-color: var(--antifreeze);
+        color: var(--text-inverted);
     }
     .off {
+        color: var(--text-inverted);
         background-color: var(--off);
     }
 
     .t17-19.disabled {
+        color: var(--text-inverted);
         background-color: var(--t17-19-secondary);
     }
     .t19-21.disabled {
+        color: var(--text-inverted);
         background-color: var(--t19-21-secondary);
     }
     .t21-23.disabled {
+        color: var(--text-inverted);
         background-color: var(--t21-23-secondary);
     }
     .t23-25.disabled {
+        color: var(--text-inverted);
         background-color: var(--t23-25-secondary);
     }
     .antifreeze.disabled {
+        color: var(--text-inverted);
         background-color: var(--antifreeze-secondary);
     }
     .off.disabled {
+        color: var(--text-inverted);
         background-color: var(--off-secondary);
     }
 </style>

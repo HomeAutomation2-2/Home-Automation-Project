@@ -62,22 +62,24 @@ export class AddUserController
 
         if (this.password.length < 6)
         {
-            this.first_name_error = "Password has to be minimum 6 caracters"
+            this.password_error = "Password has to be minimum 6 caracters"
             return
         }
 
+        const new_user = JSON.stringify({
+            firstName: this.first_name,
+            lastName: this.last_name,
+            cnp: this.cnp,
+            phone: this.phone_number,
+            password_plaintext: this.password,
+            isAdmin: this.is_admin,
+        })
+        console.log(new_user)
+
         const response = await fetch(`${authStore.server_url}/users/register`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                firstName: this.first_name,
-                lastName: this.last_name,
-                cnp: this.cnp,
-                phone: this.phone_number,
-                password_plaintext: this.password
-            })
+            headers: { "Content-Type": "application/json" },
+            body: new_user
         })
 
         const data = await response.json()

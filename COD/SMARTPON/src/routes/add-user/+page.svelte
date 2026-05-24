@@ -65,7 +65,9 @@
         onclick={ () => controller.is_admin = !controller.is_admin }
     >
         <span>Is admin?</span>
-        <Checkbox selected={controller.is_admin} />
+        <Checkbox 
+            selected={controller.is_admin} 
+        />
     </button>
 </div>
 

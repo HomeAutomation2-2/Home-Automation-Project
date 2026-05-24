@@ -53,11 +53,11 @@
         <button
             class="temp-adjuster"
             class:disabled={!can_modify}
-            onclick={() => adjustTemp(0.5)}
+            onclick={() => adjustTemp(-0.5)}
         >
-            <Plus />
+            <Minus />
         </button>
-
+        
         <button
             class="temp-state"
             onclick={cycleTempState}
@@ -68,9 +68,9 @@
         <button
             class="temp-adjuster"
             class:disabled={!can_modify}
-            onclick={() => adjustTemp(-0.5)}
+            onclick={() => adjustTemp(0.5)}
         >
-            <Minus />
+            <Plus />
         </button>
     </div>
 </div>
