@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Length } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsString, Length } from "class-validator";
 
 
 
@@ -22,4 +22,7 @@ export class CreateUserDto
     @IsString()
     @Length(6, 120, { message: "Password has to be at least 6 characters"})
     password_plaintext!: string;
+
+    @IsBoolean()
+    isAdmin: boolean = false
 }

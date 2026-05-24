@@ -5,9 +5,9 @@ CREATE TABLE IF NOT EXISTS users (
     cnp           VARCHAR(13)  UNIQUE NOT NULL,
     phone         VARCHAR(20)  UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    is_admin      BOOLEAN      DEFAULT false,
-    is_suspended  BOOLEAN      DEFAULT false,
-    is_home       BOOLEAN      DEFAULT false,
+    is_admin      BOOLEAN      NOT NULL DEFAULT false,
+    is_suspended  BOOLEAN      NOT NULL DEFAULT false,
+    is_home       BOOLEAN      NOT NULL DEFAULT false,
     bt_code_hash  VARCHAR(255),
     bt_code_epoch INT,
     created_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
@@ -52,16 +52,29 @@ CREATE TABLE IF NOT EXISTS temperature_readings (
     occured_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS events (
-    id         SERIAL      PRIMARY KEY,
-    user_id    INT         REFERENCES users(id) ON DELETE SET NULL,
-    event_type VARCHAR(50) NOT NULL, -- 'access', 'light', 'program', 'boiler'
-    payload    JSONB       NOT NULL,
-    occured_at TIMESTAMP   DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS access_events (
+    id          SERIAL      PRIMARY KEY,
+    user_id     INT         REFERENCES users(id) ON DELETE SET NULL,
+    direction   VARCHAR(10) NOT NULL CHECK (direction IN ('in', 'out')),
+    occurred_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- CREATE TABLE IF NOT EXISTS home_settings (
---     id              SERIAL       PRIMARY KEY,
---     hysteresis      DECIMAL(3,2) NOT NULL,
---     antifreeze_temp DECIMAL(4,2) NOT NULL
--- );
+CREATE TABLE IF NOT EXISTS light_events (
+    id          SERIAL    PRIMARY KEY,
+    zone_id     INT       REFERENCES light_zones(id) ON DELETE SET NULL,
+    user_id     INT       REFERENCES users(id) ON DELETE SET NULL,
+    new_state   BOOLEAN   NOT NULL,
+    occurred_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS boiler_events (
+    id          SERIAL    PRIMARY KEY,
+    new_state   BOOLEAN   NOT NULL,
+    occurred_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS home_settings (
+    id              SERIAL       PRIMARY KEY,
+    hysteresis      DECIMAL(3,2) NOT NULL,
+    antifreeze_temp DECIMAL(4,2) NOT NULL
+);
