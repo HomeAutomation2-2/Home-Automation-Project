@@ -26,6 +26,12 @@ export class UserStore
     }
 
 
+    public getId()
+    {
+        return this.cachedProfile?.id
+    }
+
+
     public setProfile(user: any): void 
     {
         const { passwordHash, btCodeHash, ...safeProfile } = user;

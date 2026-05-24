@@ -1,13 +1,23 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
     import BannerUsersHome from "@components/banner-users-home.svelte";
     import UserCard from "@components/user-card.svelte";
     import type { MyHomeController } from "@controllers/my-home.controller.svelte";
+    import { authStore } from "@services/auth-store.svelte";
     import { userStore } from "@services/user-profile";
-    import { getContext, onMount } from "svelte";
+    import { getContext } from "svelte";
 
     
     const controller = getContext("home-controller") as MyHomeController
     controller.updatePresence()
+
+
+    function logOut()
+    {
+        authStore.logout()
+        userStore.clearProfile()
+        goto("/login/select-server")
+    }
 </script>
 
 
@@ -21,25 +31,33 @@
     <div class="users">
         {#each controller.users_presence as user (user.id) }
             <UserCard 
+                user_id={user.id}
                 first_name={user.first_name}
                 last_name={user.last_name}
                 is_home={user.is_home}
                 is_suspended={user.is_suspended}
                 last_event={user.last_access_event}
+                is_you={user.id === userStore.getId()}
+                clickable={userStore.isAdmin()}
             />
         {/each}
     </div>
 
-    {#if userStore.isAdmin()}
-        <div class="add-aligner">
-            <a 
-                class="add-user"
-                href="/add-user"
-            >
-                Add user
-            </a>
-        </div>
-    {/if}
+    <div class="buttons">
+        <button onclick={logOut}>
+            Log out
+        </button>
+        {#if userStore.isAdmin()}
+            <div class="add-aligner">
+                <a 
+                    class="add-user"
+                    href="/add-user"
+                >
+                    Add user
+                </a>
+            </div>
+        {/if}
+    </div>
 </div>
 
 
@@ -64,8 +82,22 @@
     }
 
     .add-user {
-        color: var(--red-text);
+        color: var(--text-primary);
         width: fit-content;
         text-decoration: underline;
+    }
+
+    .buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        justify-content: center;
+
+        & > * {
+            flex: 1;
+            justify-content: center;
+            text-align: center;
+            text-decoration: underline;
+        }
     }
 </style>

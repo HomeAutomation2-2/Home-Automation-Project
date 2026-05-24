@@ -1,45 +1,78 @@
 <script lang="ts">
     let {
+        user_id,
         first_name = "John",
         last_name = "Doe",
         is_suspended = false,
         is_home = false,
         last_event,
+        is_you,
+        clickable = false,
     } : {
+        user_id: number
         first_name?: string
         last_name?: string
         is_suspended?: boolean
         is_home?: boolean
-        last_event?: string
+        last_event?: string,
+        is_you?: boolean,
+        clickable?: boolean
     } = $props()
 
     let initials = $derived((first_name?.[0] + last_name?.[0]).toUpperCase())
 </script>
 
 
-
-<button class="user-card">
-    <span class="avatar">{initials}</span>
-
-    <div class="info">
-        <span class="name">{first_name} {last_name}</span>
-        {#if !is_suspended}
-            <span class="last-event">{last_event}</span>
-        {:else}
-            <span class="last-event">Account suspended</span>
-        {/if}
-    </div>
-
-    <div 
-        class="status"
-        class:suspended={is_suspended}
-        class:home={is_home}
-        class:away={is_home === false}
+{#if clickable}
+    <a 
+        class="user-card"
+        href={`/manage-user/${user_id}`}
     >
-        <div class="dot"></div>
-        <span class="location">{is_suspended ? "-" : is_home ? "Home" : "Away"}</span>
+        <span class="avatar">{initials}</span>
+
+        <div class="info">
+            <span class="name">{first_name} {last_name}{is_you ? " (You)" : ""}</span>
+            {#if !is_suspended}
+                <span class="last-event">{last_event}</span>
+            {:else}
+                <span class="last-event">Account suspended</span>
+            {/if}
+        </div>
+
+        <div 
+            class="status"
+            class:suspended={is_suspended}
+            class:home={is_home}
+            class:away={is_home === false}
+        >
+            <div class="dot"></div>
+            <span class="location">{is_suspended ? "-" : is_home ? "Home" : "Away"}</span>
+        </div>
+    </a>
+{:else}
+    <div class="user-card">
+        <span class="avatar">{initials}</span>
+
+        <div class="info">
+            <span class="name">{first_name} {last_name}{is_you ? " (You)" : ""}</span>
+            {#if !is_suspended}
+                <span class="last-event">{last_event}</span>
+            {:else}
+                <span class="last-event">Account suspended</span>
+            {/if}
+        </div>
+
+        <div 
+            class="status"
+            class:suspended={is_suspended}
+            class:home={is_home}
+            class:away={is_home === false}
+        >
+            <div class="dot"></div>
+            <span class="location">{is_suspended ? "-" : is_home ? "Home" : "Away"}</span>
+        </div>
     </div>
-</button>
+{/if}
 
 
 

@@ -15,13 +15,25 @@
 </script>
 
 
-<TopbarTabbed 
-    page_name={userStore.isAdmin() ? "My Home (Admin)" : "My Home"  }
-    tabs={[
-        { label: "Presence", href: "/my-home/presence"},
-        { label: "Logs", href: "/my-home/logs"},
-    ]}
-/>
+
+{#if userStore.isAdmin()}
+    <TopbarTabbed 
+        page_name={userStore.isAdmin() ? "My Home (Admin)" : "My Home"  }
+        tabs={[
+            { label: "Presence", href: "/my-home/presence"},
+            { label: "Logs", href: "/my-home/logs"},
+            { label: "Temps", href: "/my-home/temps"},
+        ]}
+    />
+{:else}
+    <TopbarTabbed 
+        page_name={userStore.isAdmin() ? "My Home (Admin)" : "My Home"  }
+        tabs={[
+            { label: "Presence", href: "/my-home/presence"},
+            { label: "Logs", href: "/my-home/logs"},
+        ]}
+    />
+{/if}
 <div class="content">
     {@render children()}
 </div>
