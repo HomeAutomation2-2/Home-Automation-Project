@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomsModule } from './rooms/rooms.module';
 import { UsersModule } from './users/users.module';
@@ -11,15 +12,16 @@ import { AppController } from './app.controller';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'mysecretpassword',
-      database: 'home_automation',
-      autoLoadEntities: true, // Încarcă automat entitățile pe care le definim în cod
-      synchronize: false,    // Rămâne false; baza de date este creată prin scriptul SQL din DATABASE
+      host: process.env.DB_HOST ?? 'localhost',
+      port: Number(process.env.DB_PORT ?? 5432),
+      username: process.env.DB_USERNAME ?? 'postgres',
+      password: process.env.DB_PASSWORD ?? 'mysecretpassword',
+      database: process.env.DB_DATABASE ?? 'home_automation',
+      autoLoadEntities: true,
+      synchronize: false,
     }),
     RoomsModule,
     UsersModule,
@@ -29,6 +31,6 @@ import { AppController } from './app.controller';
     TemperatureReadingsModule,
     EventsModule,
   ],
-  controllers: [AppController]
+  controllers: [AppController],
 })
 export class AppModule {}
