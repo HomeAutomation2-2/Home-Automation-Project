@@ -59,6 +59,10 @@ export class LoginController
     }
 
 
+    /**
+     * Send a login request to the server and wait for a new session to be generated.
+     * @returns `true` if the login is successfull, else `false`.
+     */
     async loginUser(): Promise<boolean>
     {
         if (this.working_server_url === "") 
@@ -92,13 +96,16 @@ export class LoginController
 
             if (!response.ok) 
             {
-                throw new Error(data.message || "Invalid credentials");
+                this.login_error = data.message || "Invalid credentials"
+
+                return false
             }
 
             authStore.setToken(data.token)
             authStore.setUrl(this.working_server_url)
             console.log(data.token)
-            const profileFetched = await this.fetchUserProfile(data.token)
+            // try twice before logging out the user if the profile cannot be loaded
+            const profileFetched = await this.fetchUserProfile(data.token) || await this.fetchUserProfile(data.token)
             
             if (!profileFetched) 
             {
@@ -115,13 +122,48 @@ export class LoginController
 
         } 
         catch (error: any) {
-            this.login_error = "Error why authentificating"
+            this.login_error = "Error while authentificating"
 
             return false
         }
     }
 
 
+    /**
+     * Retrieve the user info from the server.
+     * @param token The user's session token.
+     * @returns `true` if the user info was successfully retrieved, else `false`.
+     */
+    async fetchUserProfile(token: string): Promise<boolean> 
+    {
+        try {
+            const response = await fetch(`${this.working_server_url}/users/me`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            })
+
+            if (!response.ok) 
+                return false
+
+            const profileData = await response.json()
+            userStore.setProfile(profileData)
+
+            return true
+        } 
+        catch (error) {
+            return false
+        }
+    }
+
+
+    /**
+     * Clean up the URL provided by the user.
+     * @param url The URL provided by the user.
+     * @returns The URL with `https` added if no protocol is specified and with trailing `/` removed.
+     */
     _makeUrlProper(url: string): string
     {
         let new_url = url
@@ -133,26 +175,5 @@ export class LoginController
             new_url = `https://${new_url}`
 
         return new_url
-    }
-
-    async fetchUserProfile(token: string): Promise<boolean> {
-        try {
-            const response = await fetch(`${this.working_server_url}/users/me`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (!response.ok) throw new Error("Failed to fetch profile");
-
-            const profileData = await response.json();
-            userStore.setProfile(profileData);
-            return true;
-        } catch (error) {
-            this.login_error = "Failed to load user profile";
-            return false;
-        }
     }
 }
