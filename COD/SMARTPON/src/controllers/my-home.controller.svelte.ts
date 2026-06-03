@@ -1,6 +1,6 @@
 import type { UnifiedLog } from "@data-types/log";
 import type { UserPresence } from "@data-types/user-presence";
-import { authStore } from "@services/auth-store.svelte";
+import { api } from "@services/api";
 
 
 
@@ -16,25 +16,16 @@ export class MyHomeController
     users_home = $derived(this.users_presence.filter(it => it.is_home).length)
 
 
-    async updatePresence()
+    /**
+     * Request all user presence data from the server.
+     */
+    async updatePresence(): Promise<void>
     {
-        if (!authStore.token)
-        {
-            console.log("no session token. aborting")
-            return
-        }
-
         console.log("requesting presence...")
 
         this.presence_load_error = ""
 
-        const response = await fetch(`${authStore.server_url}/users/presence`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${authStore.token}`,
-                "Content-Type": "application/json"
-            }
-        })
+        const response = await api.get("/users/presence")
 
         if (!response.ok)
         {
@@ -48,29 +39,21 @@ export class MyHomeController
     }
 
 
-    async updateLogs()
+    /**
+     * Request logs from the server. If the current user is an admin the logs will be of all users,
+     * else only current user's logs.
+     */
+    async updateLogs(): Promise<void>
     {
-        if (!authStore.token)
-        {
-            console.log("no session token. aborting")
-            return
-        }
-
         console.log("requesting logs...")
 
         this.logs_load_error = ""
 
-        const response = await fetch(`${authStore.server_url}/users/logs`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${authStore.token}`,
-                "Content-Type": "application/json"
-            }
-        })
+        const response = await api.get("/users/logs")
 
         if (!response.ok)
         {
-            this.presence_load_error = "Failed to fetch logs"
+            this.logs_load_error = "Failed to fetch logs"
             throw new Error("Failed to fetch logs")
         }
 

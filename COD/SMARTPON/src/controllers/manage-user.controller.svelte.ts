@@ -1,5 +1,5 @@
 import type { UserInfo } from "@data-types/user-info"
-import { authStore } from "@services/auth-store.svelte"
+import { api } from "@services/api"
 
 
 
@@ -26,7 +26,10 @@ export class ManageUserController
     is_suspended = $derived(this.user?.is_suspended ?? true)
 
 
-    async reloadData()
+    /**
+     * Re-request user data from the server.
+     */
+    async reloadData(): Promise<void>
     {
         if (!this.given_user_id)
             return
@@ -35,25 +38,17 @@ export class ManageUserController
     }
 
 
-    async loadData(user_id: number)
+    /**
+     * Request data for a user from the server.
+     * @param user_id The ID of the user whose data is requested.
+     */
+    async loadData(user_id: number): Promise<void>
     {
         this.given_user_id = user_id
 
-        if (!authStore.token)
-        {
-            console.log("no session token. aborting")
-            return
-        }
-
         console.log("requesting user info...")
 
-        const response = await fetch(`${authStore.server_url}/users/${user_id}`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${authStore.token}`,
-                "Content-Type": "application/json"
-            }
-        })
+        const response = await api.get(`/users/${user_id}`)
 
         if (!response.ok)
         {
@@ -61,11 +56,14 @@ export class ManageUserController
         }
 
         this.user = await response.json()
-        console.log(this.user)
     }
 
 
-    async deleteAccount()
+    /**
+     * Delete the user's account.
+     * @returns `true` if the account was deleted, else `false`.
+     */
+    async deleteAccount(): Promise<boolean>
     {
         if (!this.given_user_id)
         {
@@ -73,21 +71,9 @@ export class ManageUserController
             return false
         }
 
-        if (!authStore.token)
-        {
-            console.log("no session token. aborting")
-            return false
-        }
-
         console.log("deleting user...")
 
-        const response = await fetch(`${authStore.server_url}/users/${this.given_user_id}`, {
-            method: "DELETE",
-            headers: {
-                "Authorization": `Bearer ${authStore.token}`,
-                "Content-Type": "application/json"
-            }
-        })
+        const response = await api.delete(`/users/${this.given_user_id}`)
 
         if (!response.ok)
         {
@@ -98,7 +84,11 @@ export class ManageUserController
     }
 
 
-    async suspendOrEnableAccount()
+    /**
+     * Toggle the `suspended` status of the user.
+     * @returns `true` if the toggle was successful, else false.
+     */
+    async suspendOrEnableAccount(): Promise<boolean>
     {
         if (!this.given_user_id)
         {
@@ -106,21 +96,9 @@ export class ManageUserController
             return false
         }
 
-        if (!authStore.token)
-        {
-            console.log("no session token. aborting")
-            return false
-        }
-
         console.log("deleting user...")
 
-        const response = await fetch(`${authStore.server_url}/users/${this.given_user_id}/suspend`, {
-            method: "PATCH",
-            headers: {
-                "Authorization": `Bearer ${authStore.token}`,
-                "Content-Type": "application/json"
-            }
-        })
+        const response = await api.patch(`/users/${this.given_user_id}/suspend`, undefined)
 
         if (!response.ok)
         {

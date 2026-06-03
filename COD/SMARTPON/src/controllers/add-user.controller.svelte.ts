@@ -1,4 +1,4 @@
-import { authStore } from "@services/auth-store.svelte"
+import { api } from "@services/api"
 
 
 
@@ -18,7 +18,11 @@ export class AddUserController
     password_error = $state("")
 
 
-    async createUser()
+    /**
+     * Create a new user.
+     * @returns `true` if the new user was created, else `false`.
+     */
+    async createUser(): Promise<boolean>
     {
         this.first_name_error = ""
         this.last_name_error = ""
@@ -34,53 +38,48 @@ export class AddUserController
         if (this.first_name === "")
         {
             this.first_name_error = "Please entry a name"
-            return
+            return false
         }
 
         if (this.last_name === "")
         {
             this.last_name_error = "Please entry a name"
-            return
+            return false
         }
 
         if (this.cnp.length !== 13)
         {
             this.cnp_error = `CNP has to be 13 characters long (currently ${this.cnp.trim().length})`
-            return
+            return false
         }
         else if (!this._isNumericString(this.cnp))
         {
             this.cnp_error = `CNP has to be all numbers`
-            return
+            return false
         }
 
         if (this.phone_number.length < 10)
         {
             this.phone_number_error = "Phone number has to be 10 characters long"
-            return
+            return false
         }
 
         if (this.password.length < 6)
         {
             this.password_error = "Password has to be minimum 6 caracters"
-            return
+            return false
         }
 
-        const new_user = JSON.stringify({
+        const new_user = {
             firstName: this.first_name,
             lastName: this.last_name,
             cnp: this.cnp,
             phone: this.phone_number,
             password_plaintext: this.password,
             isAdmin: this.is_admin,
-        })
-        console.log(new_user)
+        }
 
-        const response = await fetch(`${authStore.server_url}/users/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: new_user
-        })
+        const response = await api.post("/users/register", new_user)
 
         const data = await response.json()
 
@@ -104,6 +103,9 @@ export class AddUserController
     }
 
 
+    /**
+     * Check if the string contains only numbers.
+     */
     _isNumericString(value: string): boolean 
     {
         return /^\d+$/.test(value);
