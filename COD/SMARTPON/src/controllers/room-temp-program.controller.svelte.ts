@@ -1,6 +1,6 @@
 import type { Room } from "@data-types/room";
 import type { TempProgram } from "@data-types/temp-program";
-import { authStore } from "@services/auth-store.svelte";
+import { api } from "@services/api";
 import { getCurrentProgramTemp } from "@services/room-temp-join";
 
 
@@ -11,8 +11,12 @@ export class RoomTempController
     room = $state<Room|undefined>(undefined)
     room_program_id = $state<number|null>(null)
     temp_programs = $state<TempProgram[]>([])
-    error = $state("")
 
+    error = $state("")
+    offset_error = $state("")
+    is_edit_offset = $state(false)
+    
+    offset = $derived(this.room?.offset_value ?? 0)
     target_temp = $derived.by( () =>
     {
         if (!this.room || !this.room.temp_program_id)
@@ -27,26 +31,60 @@ export class RoomTempController
     })
 
 
-    async setRoomProgram(id: number|null)
+    /**
+     * Assign a new progrom to the room.
+     * @param id The ID of the program.
+     */
+    async setRoomProgram(id: number|null): Promise<void>
     {
         if (!this.room)
             return
 
         this.room_program_id = id
 
-        const response = await fetch(`${authStore.server_url}/rooms/${this.room.id}/temp-program`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ temp_program_id: id })
-        });
+        const response = await api.patch(`/rooms/${this.room.id}/temp-program`, { temp_program_id: id })
 
         if (!response.ok)
             this.room_program_id = this.room?.temp_program_id ?? null
         else
+        {
             this.room.temp_program_id = id
+            this.offset = this.room?.offset_value ?? 0
+        }
     }
 
 
+    /**
+     * Change the room's offset value. If it cannot be applied it is reverted to the old one.
+     * @param offset The new offset value.
+     */
+    async setRoomOffset(offset: number): Promise<boolean>
+    {
+        if (!this.room) 
+            return false
+
+        this.offset_error = ""
+
+        const response = await api.patch(`/rooms/${this.room.id}/offset`, { offset: offset })
+
+        if (!response.ok)
+        {
+            this.offset_error = "Server cannot apply this offset."
+            return false
+        }
+        else
+        {
+            this.room.offset_value = offset
+            return true
+        }
+    }
+
+
+
+    /**
+     * Request all necessary data from the server: the room info and the temp programs.
+     * @param room_id The ID of the current room.
+     */
     async loadData(room_id: number)
     {
         this.error = ""
@@ -54,8 +92,8 @@ export class RoomTempController
 
         try {
             const [room_response, programs_response] = await Promise.all([
-                fetch(`${authStore.server_url}/rooms/${room_id}`),
-                fetch(`${authStore.server_url}/heating-programs`),
+                api.get(`/rooms/${room_id}`),
+                api.get("/heating-programs")
             ])
 
             if (!room_response.ok) 

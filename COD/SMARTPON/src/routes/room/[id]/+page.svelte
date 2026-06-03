@@ -1,6 +1,9 @@
 <script lang="ts">
     import { page } from "$app/state";
     import ErrorBanner from "@components/error-banner.svelte";
+    import Pencil from "@components/icons/pencil.svelte";
+    import InputNumber from "@components/input-number.svelte";
+    import InputText from "@components/input-text.svelte";
     import RoomTempCard from "@components/room-temp-card.svelte";
     import TempProgram from "@components/temp-program.svelte";
     import TopbarBack from "@components/topbar-back.svelte";
@@ -8,6 +11,7 @@
     import { userStore } from "@services/user-profile";
 
     const controller = new RoomTempController()
+    let offset = $state(controller.offset)
     
     $effect( () => {
         const id = Number(page.params.id);
@@ -16,7 +20,25 @@
         }
     })
 
-    let has_server_connection = $state(false)
+    let has_server_connection = $state(true)
+
+    async function saveOffset()
+    {
+        const result = await controller.setRoomOffset(offset)
+
+        if (!result)
+            return
+
+        controller.is_edit_offset = false
+    }
+
+    function cancelOffset()
+    {
+        controller.is_edit_offset = false;
+        controller.offset_error = ""
+        offset = controller.offset
+        console.log(offset)
+    }
 </script>
 
 
@@ -31,6 +53,39 @@
 {/if}
 
 <div class="content">
+    {#if controller.is_edit_offset}
+        <div class="sensor-offset-editor">
+            <InputNumber 
+                label="Sensor offset"
+                type="number"
+                bind:value={offset}
+                error={controller.offset_error}
+            />
+
+            <div class="offset-buttons">
+                <button
+                    onclick={saveOffset}
+                >
+                    Save
+                </button>
+                <button 
+                    class="cancel"
+                    onclick={cancelOffset}
+                >
+                    Cancel
+                </button>
+            </div>
+        </div>
+    {:else}
+        <div class="sensor-offset">
+            <span>Sensor offset:</span>
+            <span class="value">{controller.offset}</span>
+            <button onclick={ () => { offset = controller.offset; controller.is_edit_offset = true } }>
+                <Pencil width={16} height={16} />
+            </button>
+        </div>
+    {/if}
+
     {#if controller.room?.temp_program_id === null}
         <div class="heat-info">
             <span>Heating has been disabled.</span>
@@ -83,7 +138,7 @@
         display: flex;
         flex-direction: column;
         padding: 16px;
-        gap: 8px;
+        gap: 16px;
     }
 
     .heat-info {
@@ -115,5 +170,43 @@
         text-decoration: underline;
         text-align: center;
         flex: 1;
+    }
+
+    .sensor-offset {
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+        align-items: center;
+        padding: 8px;
+
+        & .value {
+            flex: 1;
+        }
+
+        & button {
+            color: var(--text-secondary);
+        }
+    }
+
+    .sensor-offset-editor {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        & .offset-buttons {
+            display: flex;
+            flex-direction: row;
+            padding: 0 16px;
+
+            & > * {
+                flex: 1;
+                text-decoration: underline;
+                text-align: center;
+            }
+
+            & .cancel {
+                color: var(--text-primary);
+            }
+        }
     }
 </style>
