@@ -122,6 +122,7 @@ export class LoginController
 
         } 
         catch (error: any) {
+            console.error(error)
             this.login_error = "Error while authentificating"
 
             return false

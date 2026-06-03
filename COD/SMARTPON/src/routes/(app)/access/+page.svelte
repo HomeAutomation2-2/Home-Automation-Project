@@ -7,6 +7,7 @@
     import AccesDirection from "@components/acces-direction.svelte";
     import { bluetoothService } from "@services/bluetooth-service";
     import { Preferences } from "@capacitor/preferences";
+    import { accessService } from "@services/access-service";
 
     
     let has_server_connection = $state(false)
@@ -51,6 +52,7 @@
             if (response.request_status === 'success') 
             {
                 door_state = response.door_status === 'unlocked' ? 2 : 0
+                await accessService.saveEvent(action === 'unlock' ? 'in' : 'out')
             } 
             else 
             {
@@ -106,6 +108,7 @@
         if (!is_bluetooth_available) return
 
         await tryConnect()
+        await accessService.syncPendingEvents()
 
         polling = setInterval(async () => 
         {

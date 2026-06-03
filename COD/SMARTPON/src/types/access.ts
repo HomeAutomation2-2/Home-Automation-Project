@@ -15,3 +15,9 @@ export interface AccessResponse {
     door_status: DoorStatus
     error_reason: ErrorReason
 }
+
+
+export interface AccessEvent {
+    occurred_at: string
+    direction: 'in' | 'out'
+}
