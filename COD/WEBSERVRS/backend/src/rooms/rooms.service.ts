@@ -82,4 +82,21 @@ export class RoomsService
 
         return { success: true }
     }
+
+
+    async updateOffset(roomId: number, offset: number) 
+    {
+        const room = await this.room_repository.findOne({ where: { id: roomId } })
+        
+        if (!room)
+            throw new NotFoundException(`Room with ID ${roomId} not found`)
+
+        room.offset_value = offset
+        await this.room_repository.save(room)
+
+        return { 
+            success: true, 
+            message: `Offset updated to ${offset} for room ${roomId}` 
+        };
+    }
 }

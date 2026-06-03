@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, BadRequestException, UseGuards } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
+import { SessionGuard } from '../users/guards/session.guard';
 
 
 
@@ -45,13 +46,13 @@ export class RoomsController
         return this.roomsService.setTempProgramId(id, clean_program_id)
     }
 
-    // @Patch(':id')
-    // update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
-    //   return this.roomsService.update(+id, updateRoomDto);
-    // }
-
-    // @Delete(':id')
-    // remove(@Param('id') id: string) {
-    //   return this.roomsService.remove(+id);
-    // }
+    
+    @Patch(':id/offset')
+    @UseGuards(SessionGuard)
+    async updateRoomOffset(
+        @Param('id', ParseIntPipe) roomId: number,
+        @Body('offset') offset: number
+    ) {
+        return this.roomsService.updateOffset(roomId, offset);
+    }
 }
