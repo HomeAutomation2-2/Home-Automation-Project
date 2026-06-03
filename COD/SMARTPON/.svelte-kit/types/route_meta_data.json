@@ -1,10 +1,61 @@
 {
-	"/": [
-		"src/routes/+page.ts",
+	"/(app)": [
+		"src/routes/(app)/+page.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.ts"
 	],
-	"/access": [
+	"/": [
+		"src/routes/+layout.ts"
+	],
+	"/(app)/access": [
+		"src/routes/+layout.ts"
+	],
+	"/add-room": [
+		"src/routes/+layout.ts"
+	],
+	"/add-temp-program": [
+		"src/routes/+layout.ts"
+	],
+	"/add-user": [
+		"src/routes/+layout.ts"
+	],
+	"/(app)/dashboard": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.ts"
+	],
+	"/(app)/dashboard/temps": [
+		"src/routes/+layout.ts"
+	],
+	"/login": [
+		"src/routes/+layout.ts"
+	],
+	"/login/select-account": [
+		"src/routes/+layout.ts"
+	],
+	"/login/select-server": [
+		"src/routes/+layout.ts"
+	],
+	"/manage-user/[id]": [
+		"src/routes/+layout.ts"
+	],
+	"/(app)/my-home": [
+		"src/routes/(app)/my-home/+page.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.ts"
+	],
+	"/(app)/my-home/logs": [
+		"src/routes/+layout.ts"
+	],
+	"/(app)/my-home/presence": [
+		"src/routes/+layout.ts"
+	],
+	"/(app)/my-home/temps": [
+		"src/routes/+layout.ts"
+	],
+	"/room/[id]": [
+		"src/routes/room/[id]/+layout.ts",
+		"src/routes/+layout.ts",
+		"src/routes/room/[id]/+layout.ts",
 		"src/routes/+layout.ts"
 	]
 }
