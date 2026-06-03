@@ -1,7 +1,7 @@
 <script>
     import Dashboard from "./icons/dashboard.svelte";
     import DoorOpen from "./icons/door-open.svelte";
-    import Users from "./icons/users.svelte";
+    import House from "./icons/house.svelte";
 
 </script>
 
@@ -18,9 +18,9 @@
         <span>Dash</span>
     </a>
 
-    <a href="/users">
-        <Users />
-        <span>Dash</span>
+    <a href="/my-home/presence">
+        <House />
+        <span>My Home</span>
     </a>
 </div>
 

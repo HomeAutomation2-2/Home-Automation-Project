@@ -1,6 +1,6 @@
 import { BleClient, dataViewToText, textToDataView, type BleDevice } from "@capacitor-community/bluetooth-le"
 import { Preferences } from "@capacitor/preferences"
-import type { AccessRequest, AccessResponse } from "../types/access";
+import type { AccessRequest, AccessResponse } from "@data-types/access";
 
 
 

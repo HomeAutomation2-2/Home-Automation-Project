@@ -4,5 +4,5 @@ import { redirect } from "@sveltejs/kit";
 
 export const load = () => 
 {
-    redirect(307, '/access')
+    redirect(307, '/my-home/presence')
 };

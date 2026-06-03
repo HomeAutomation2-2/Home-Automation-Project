@@ -1,0 +1,103 @@
+<script lang="ts">
+    import { goto } from "$app/navigation";
+    import BannerUsersHome from "@components/banner-users-home.svelte";
+    import UserCard from "@components/user-card.svelte";
+    import type { MyHomeController } from "@controllers/my-home.controller.svelte";
+    import { authStore } from "@services/auth-store.svelte";
+    import { userStore } from "@services/user-profile";
+    import { getContext } from "svelte";
+
+    
+    const controller = getContext("home-controller") as MyHomeController
+    controller.updatePresence()
+
+
+    function logOut()
+    {
+        authStore.logout()
+        userStore.clearProfile()
+        goto("/login/select-server")
+    }
+</script>
+
+
+
+<div class="page-contents">
+    <BannerUsersHome 
+        present={controller.users_home}
+        total={controller.users_total}
+    />
+
+    <div class="users">
+        {#each controller.users_presence as user (user.id) }
+            <UserCard 
+                user_id={user.id}
+                first_name={user.first_name}
+                last_name={user.last_name}
+                is_home={user.is_home}
+                is_suspended={user.is_suspended}
+                last_event={user.last_access_event}
+                is_you={user.id === userStore.getId()}
+                clickable={userStore.isAdmin()}
+            />
+        {/each}
+    </div>
+
+    <div class="buttons">
+        <button onclick={logOut}>
+            Log out
+        </button>
+        {#if userStore.isAdmin()}
+            <div class="add-aligner">
+                <a 
+                    class="add-user"
+                    href="/add-user"
+                >
+                    Add user
+                </a>
+            </div>
+        {/if}
+    </div>
+</div>
+
+
+
+<style>
+    .page-contents {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        gap: 24px;
+    }
+
+    .users {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .add-aligner {
+        display: flex;
+        justify-content: center;
+    }
+
+    .add-user {
+        color: var(--text-primary);
+        width: fit-content;
+        text-decoration: underline;
+    }
+
+    .buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        justify-content: center;
+
+        & > * {
+            flex: 1;
+            justify-content: center;
+            text-align: center;
+            text-decoration: underline;
+        }
+    }
+</style>
