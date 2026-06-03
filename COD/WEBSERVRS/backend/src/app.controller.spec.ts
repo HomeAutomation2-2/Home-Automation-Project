@@ -1,22 +1,36 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect } from '@jest/globals';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 
-describe('AppController', () => {
-  let appController: AppController;
 
-  beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
 
-    appController = app.get<AppController>(AppController);
-  });
+/* ══════════════════════════════════════════════════════════════════════════════
+   AppController — Unit Tests
+   ══════════════════════════════════════════════════════════════════════════════ */
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+describe('AppController', () => 
+{
+    let controller: AppController;
+
+
+    beforeEach(() => 
+    {
+        controller = new AppController();
     });
-  });
+
+
+
+    /* ─────────────────────── checkHealth ─────────────────────── */
+
+    describe('checkHealth', () => 
+    {
+        it('ar trebui să returneze statusul "ok" și numele aplicației', () => 
+        {
+            const result = controller.checkHealth();
+
+            expect(result).toEqual({
+                status: 'ok',
+                name: 'Dev Bluelock v0.0',
+            });
+        });
+    });
 });

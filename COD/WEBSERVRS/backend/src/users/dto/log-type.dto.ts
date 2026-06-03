@@ -1,0 +1,1 @@
+export type LogType = 'access' | 'lights' | 'boiler'

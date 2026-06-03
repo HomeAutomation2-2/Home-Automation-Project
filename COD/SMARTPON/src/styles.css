@@ -1,0 +1,78 @@
+@font-face {
+  font-family: 'Inter';
+  src: url("/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url("/InterVariable-Italic.woff2") format('woff2');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+    --base: hsl(0 0% 91%);
+    --raised: hsl(0 0% 96%);
+    --raised-border: hsl(0 0% 88%);
+    --lowered: hsl(0 0% 86%);
+    --lowered-border: hsl(0 0% 75%);
+    --dividers: hsl(0 0% 75%);
+    --text: hsl(0 0% 15%);
+    --text-inverted: hsl(0 0% 90%);
+    --text-secondary: hsl(0 0% 45%);
+    --text-secondary-inverted: hsl(0 0% 75%);
+    --text-primary: hsl(175 65% 20%);
+    --primary-background: hsl(175 20% 65%);
+    --placeholder: hsl(0 0% 35%);
+    --red-text: hsl(0 70% 35%);
+    --red-background: hsl(0 50% 45%);
+    --orange-text: hsl(15 65% 40%);
+    --green-text: hsl(125 70% 20%);
+    --green-background: hsl(125 50% 35%);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--base);
+    color: var(--text);
+    font-family: "Inter", sans-serif;
+    overflow: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+html, body {
+    scrollbar-width: none;
+}
+
+html, body {
+    -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;
+}
+
+html, body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+button {
+    all: unset;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}

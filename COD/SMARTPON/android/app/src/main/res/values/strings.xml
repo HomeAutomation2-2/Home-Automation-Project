@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BlueLock</string>
+    <string name="title_activity_main">BlueLock</string>
+    <string name="package_name">com.ambiancebit.bluelock</string>
+    <string name="custom_url_scheme">com.ambiancebit.bluelock</string>
+</resources>
