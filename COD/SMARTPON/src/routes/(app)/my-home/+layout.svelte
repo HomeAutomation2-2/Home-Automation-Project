@@ -23,6 +23,7 @@
             { label: "Presence", href: "/my-home/presence"},
             { label: "Logs", href: "/my-home/logs"},
             { label: "Temps", href: "/my-home/temps"},
+            { label: "Other", href: "/my-home/other"},
         ]}
     />
 {:else}

@@ -15,7 +15,7 @@
 
     <a href="/access">
         <DoorOpen />
-        <span>Dash</span>
+        <span>Door</span>
     </a>
 
     <a href="/my-home/presence">

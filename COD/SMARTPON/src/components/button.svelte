@@ -7,7 +7,7 @@
         href = undefined,
         fill = false,
         is_disabled = false,
-        onClick
+        onClick,
     } : {
         text?: string
         type?: ButtonType
