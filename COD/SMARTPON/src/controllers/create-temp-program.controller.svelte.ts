@@ -1,5 +1,5 @@
 import type { Period } from "@data-types/period";
-import { authStore } from "@services/auth-store.svelte";
+import { api } from "@services/api";
 
 
 
@@ -12,6 +12,11 @@ export class CreateTempController
     ])
 
 
+    /**
+     * Toggle the selection of a day in a subprogram.
+     * @param periodIndex The index of the subprogram.
+     * @param day The index of the day in the week.
+     */
     toggleDay = (periodIndex: number, day: number) =>
     {
         const period = this.periods[periodIndex]
@@ -42,6 +47,10 @@ export class CreateTempController
     }
 
 
+    /**
+     * Get the first unselected week day in program.
+     * @returns A list containing the first unselected week day in the program, else an empty list.
+     */
     private getFirstUnselectedDay(): number[] 
     {
         const allSelectedDays = this.periods.flatMap(p => p.days)
@@ -58,6 +67,10 @@ export class CreateTempController
     }
 
 
+    /**
+     * Validate the temp program does not have overlapping days or no days selected.
+     * @returns `true` if the program is valid, else `false`.
+     */
     validate(): boolean 
     {
         this.error = ""
@@ -104,6 +117,9 @@ export class CreateTempController
     }
 
 
+    /**
+     * Create a new subprogram.
+     */
     addSubprogram() 
     {
         const default_days = this.getFirstUnselectedDay()
@@ -115,6 +131,10 @@ export class CreateTempController
     }
 
 
+    /**
+     * Delete a subprogram.
+     * @param index The index of the subprogram.
+     */
     removeSubprogram(index: number) 
     {
         if (this.periods.length > 1) 
@@ -124,7 +144,11 @@ export class CreateTempController
     }
 
 
-    async createProgram() 
+    /**
+     * Create a new program on the server.
+     * @returns `true` if the program was created, else `false`.
+     */
+    async createProgram(): Promise<boolean>
     {
         if (!this.validate()) 
             return false
@@ -141,11 +165,7 @@ export class CreateTempController
         };
 
         try {
-            const response = await fetch(`${authStore.server_url}/heating-programs`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            })
+            const response = await api.post("/heating-programs", payload)
 
             return response.ok
         } 

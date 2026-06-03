@@ -1,4 +1,5 @@
-import { authStore } from "@services/auth-store.svelte"
+import { api } from "@services/api"
+
 
 
 export class CreateRoomController
@@ -9,17 +10,13 @@ export class CreateRoomController
     is_name_invalid = $derived(this.name.trim().length === 0)
 
 
+    /**
+     * Create a new room
+     * @returns `true` if the room was created, else `false`.
+     */
     async createRoom(): Promise<boolean>
     {
-        const response = await fetch(`${authStore.server_url}/rooms`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                name: this.name
-            })
-        })
+        const response = await api.post("/rooms", { name: this.name })
         const data = await response.json()
 
         if (!response.ok)
