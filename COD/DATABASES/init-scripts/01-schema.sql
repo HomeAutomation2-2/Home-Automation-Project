@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS rooms (
     name            VARCHAR(100) NOT NULL,
     temp_program_id INT          REFERENCES temperature_programs(id) ON DELETE SET NULL,
     is_heating      BOOLEAN      DEFAULT false,
-    offset_value    DECIMAL(3,2) DEFAULT 0.0,
+    offset_value    DECIMAL(4,2) DEFAULT 0.0,
     current_temp    DECIMAL(4,2) DEFAULT 0.0
 );
 
@@ -75,6 +75,6 @@ CREATE TABLE IF NOT EXISTS boiler_events (
 
 CREATE TABLE IF NOT EXISTS home_settings (
     id              SERIAL       PRIMARY KEY,
-    hysteresis      DECIMAL(3,2) NOT NULL,
+    hysteresis      DECIMAL(4,2) NOT NULL,
     antifreeze_temp DECIMAL(4,2) NOT NULL
 );
