@@ -14,7 +14,11 @@ export class DashboardController
     room_error = $state("")
     zone_error = $state("")
 
-    async loadLights()
+
+    /**
+     * Request all data necessary from the server. This includes the rooms, light zones and heating programs.
+     */    
+    async loadData()
     {
         this.room_error = ""
 
@@ -43,14 +47,27 @@ export class DashboardController
         } 
     }
 
-    getRoomName(id?: number)
-    {
-        if (!id) return
 
-        return this.rooms.find(it => it.id === id)?.name || ""
+    /**
+     * Get the name of a room based on it's ID.
+     * @param id The ID of the room.
+     * @returns The name of the room or `undefined`.
+     */
+    getRoomName(id?: number) : string|undefined
+    {
+        if (!id) 
+            return undefined
+
+        return this.rooms.find(it => it.id === id)?.name || undefined
     }
 
-    async toggleZone(zoneId: number, currentStatus: boolean) 
+
+    /**
+     * Toggles the state of a lighting zone.
+     * @param zoneId The ID of the lighting zone.
+     * @param currentStatus The new status of the zone, `true` for light on, `false` for light off.
+     */
+    async toggleZone(zoneId: number, currentStatus: boolean): Promise<void>
     {
         const zone = this.zones.find(it => it.id === zoneId)
         
@@ -76,6 +93,12 @@ export class DashboardController
     }
 
 
+    /**
+     * Create a new lighting zone.
+     * @param name The name of the lighting zone.
+     * @param roomId The ID of the room the zone is part of.
+     * @returns `true` if the room was created, else `false` and the error message is set.
+     */
     async addZone(name: string, roomId: number): Promise<boolean> 
     {
         if (!roomId)
@@ -126,11 +149,22 @@ export class DashboardController
         }
     }
 
+
+    /**
+     * Get all zones associated with a specified room.
+     * @param room_id The ID of the room.
+     * @returns A list of all zones associated with the specified room.
+     */
     getZonesForRoom(room_id: number)
     {
         return this.zones.filter(it => it.room_id === room_id)
     }
 
+
+    /**
+     * Get all necessary information for displaying the room temp status and the next program.
+     * @returns A list of objects containing all necessary information.
+     */
     getRoomsForTempDisplay(): RoomForTempDisplay[]
     {
         
@@ -149,9 +183,6 @@ export class DashboardController
             return result
         })
 
-        // console.log(this.rooms)
-        // console.log(this.temp_programs)
-        // console.log(result)
         return result
     }
 }

@@ -7,7 +7,7 @@
     let { children } = $props()
 
     const dash_controller = new DashboardController()
-    dash_controller.loadLights()
+    dash_controller.loadData()
 
     setContext("dashboard-controller", dash_controller)
 </script>

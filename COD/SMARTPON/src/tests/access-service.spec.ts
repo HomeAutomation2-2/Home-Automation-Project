@@ -1,7 +1,7 @@
 import { Preferences } from '@capacitor/preferences'
 import { accessService } from '@services/access-service'
 import { api } from '@services/api'
-import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest' // Added Vitest imports
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest'
 
 
 
