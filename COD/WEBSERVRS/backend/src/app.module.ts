@@ -8,6 +8,7 @@ import { TemperatureProgramsModule } from './temperature-programs/temperature-pr
 import { TemperatureReadingsModule } from './temperature-readings/temperature-readings.module';
 import { EventsModule } from './events/events.module';
 import { AppController } from './app.controller';
+import { HomeSettingsModule } from './home-settings/home-settings.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AppController } from './app.controller';
     TemperatureProgramsModule,
     TemperatureReadingsModule,
     EventsModule,
+    HomeSettingsModule
   ],
   controllers: [AppController]
 })
