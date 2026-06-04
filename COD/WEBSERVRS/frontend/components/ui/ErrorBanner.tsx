@@ -8,7 +8,7 @@ export function ErrorBanner({ message }: ErrorBannerProps) {
   return (
     <div
       role="alert"
-      className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200"
+      className="rounded-xl border border-[var(--ha-red-border)] bg-[var(--ha-red-bg)] px-4 py-3 text-sm text-[var(--ha-red-text)]"
     >
       {message}
     </div>

@@ -1,26 +1,37 @@
 @import "tailwindcss";
 
+/* Aliniat la SMARTPON / Figma Home Automation */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ha-base: hsl(0 0% 91%);
+  --ha-raised: hsl(0 0% 96%);
+  --ha-raised-border: hsl(0 0% 88%);
+  --ha-lowered: hsl(0 0% 86%);
+  --ha-lowered-border: hsl(0 0% 75%);
+  --ha-text: hsl(0 0% 15%);
+  --ha-text-secondary: hsl(0 0% 45%);
+  --ha-text-primary: hsl(175 65% 20%);
+  --ha-text-inverted: hsl(0 0% 90%);
+  --ha-red-text: hsl(0 70% 35%);
+  --ha-red-bg: hsl(0 50% 97%);
+  --ha-red-border: hsl(0 40% 88%);
+  --background: var(--ha-base);
+  --foreground: var(--ha-text);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ha-primary: var(--ha-text-primary);
+  --color-ha-base: var(--ha-base);
+  --color-ha-raised: var(--ha-raised);
+  --color-ha-lowered: var(--ha-lowered);
+  --color-ha-text-secondary: var(--ha-text-secondary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }

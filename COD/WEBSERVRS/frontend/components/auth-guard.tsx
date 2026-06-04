@@ -1,28 +1,31 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AuthCheckFallback } from "@/components/auth-check-fallback";
 import { isAuthenticated } from "@/lib/auth";
 
 /**
- * Protecție suplimentară în (app): sesiune doar în localStorage fără cookie
- * nu trece middleware — utilizatorul autentificat corect are ambele.
+ * Protecție suplimentară în (app). Așteaptă mount înainte de a citi localStorage
+ * ca SSR și primul paint client să fie identice (fără hydration mismatch).
  */
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const [status, setStatus] = useState<"pending" | "allowed" | "denied">(
+    "pending",
+  );
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      router.replace("/login");
+      setStatus("denied");
+      router.replace("/login?reason=session_expired");
+      return;
     }
+    setStatus("allowed");
   }, [router]);
 
-  if (!isAuthenticated()) {
-    return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Se verifică sesiunea…
-      </p>
-    );
+  if (status !== "allowed") {
+    return <AuthCheckFallback />;
   }
 
   return <>{children}</>;

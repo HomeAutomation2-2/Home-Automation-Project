@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { isAdmin } from "@/lib/auth";
 
 type NavItem = {
@@ -29,8 +30,8 @@ function NavLink({ href, label }: { href: string; label: string }) {
       href={href}
       className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
         active
-          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-          : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          ? "bg-[#004ac6] text-white"
+          : "text-[#191b23] hover:bg-white/80"
       }`}
     >
       {label}
@@ -38,37 +39,34 @@ function NavLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-/**
- * Fallback client: dacă tokenul există doar în localStorage fără cookie,
- * middleware nu protejează — acest layout redirecționează la login.
- */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const showAdmin = isAdmin();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const showAdmin = mounted && isAdmin();
   const visibleNav = NAV_ITEMS.filter((item) => !item.adminOnly || showAdmin);
 
   return (
     <div className="flex min-h-full flex-col md:flex-row">
-      <aside className="border-b border-zinc-200 bg-zinc-50 md:w-56 md:border-b-0 md:border-r dark:border-zinc-800 dark:bg-zinc-950">
+      <aside className="border-b border-[#c3c6d7] bg-[#faf8ff] md:w-56 md:border-b-0 md:border-r">
         <div className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Home Automation
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#555f6d]">
+            BlueLock
           </p>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Cloud WEB</p>
+          <p className="mt-1 text-sm text-[#737686]">Home Automation</p>
         </div>
         <nav className="flex gap-1 overflow-x-auto px-2 pb-3 md:flex-col md:overflow-visible md:px-3 md:pb-4">
           {visibleNav.map((item) => (
             <NavLink key={item.href} href={item.href} label={item.label} />
           ))}
         </nav>
-        {showAdmin && (
-          <p className="hidden px-4 pb-4 text-xs text-zinc-500 md:block">
-            Secțiune admin activă
-          </p>
-        )}
       </aside>
-      <main className="flex flex-1 flex-col">
-        <header className="border-b border-zinc-200 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 md:hidden">
+      <main className="flex flex-1 flex-col bg-white">
+        <header className="border-b border-[#c3c6d7] px-4 py-3 text-sm text-[#555f6d] md:hidden">
           {visibleNav.find((n) => pathname === n.href || pathname.startsWith(`${n.href}/`))
             ?.label ?? "Aplicație"}
         </header>
