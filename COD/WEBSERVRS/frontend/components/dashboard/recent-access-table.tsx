@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FIGMA_DASHBOARD } from "@/components/dashboard/figma-dashboard-assets";
-import { parseAccessLogForTable } from "@/lib/dashboard/parse-access-log";
+import { parseAccessLogEntry } from "@/lib/access-log/parse-access-log";
 import type { DataState } from "@/lib/dashboard/load-state";
 import type { UnifiedLog } from "@/lib/types/log";
 
@@ -23,7 +23,7 @@ export function RecentAccessTable({ state }: RecentAccessTableProps) {
               new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime(),
           )
           .slice(0, RECENT_LIMIT)
-          .map(parseAccessLogForTable)
+          .map((log) => parseAccessLogEntry(log, new Map()))
           .filter((r): r is NonNullable<typeof r> => r !== null)
       : [];
 
@@ -79,12 +79,14 @@ export function RecentAccessTable({ state }: RecentAccessTableProps) {
                     </span>
                     <span className="text-[13px] leading-4 text-[#191b23]">{row.name}</span>
                   </div>
-                  <span className="px-4 py-3 text-[13px] text-[#555f6d]">{row.timeLabel}</span>
+                  <span className="px-4 py-3 text-[13px] text-[#555f6d]">
+                    {row.timestampLabel}
+                  </span>
                   <div className="flex items-center gap-1 px-4 py-3">
                     <img
                       alt=""
                       src={
-                        row.event === "entry"
+                        row.direction === "entry"
                           ? FIGMA_DASHBOARD.iconEntry
                           : FIGMA_DASHBOARD.iconExit
                       }
@@ -92,10 +94,10 @@ export function RecentAccessTable({ state }: RecentAccessTableProps) {
                     />
                     <span
                       className={`text-[13px] leading-4 ${
-                        row.event === "entry" ? "text-[#004ac6]" : "text-[#555f6d]"
+                        row.direction === "entry" ? "text-[#004ac6]" : "text-[#555f6d]"
                       }`}
                     >
-                      {row.event === "entry" ? "Entry" : "Exit"}
+                      {row.direction === "entry" ? "Entry" : "Exit"}
                     </span>
                   </div>
                 </li>

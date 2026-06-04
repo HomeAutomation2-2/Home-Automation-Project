@@ -82,7 +82,7 @@ export function getPageMeta(pathname: string): PageMeta {
     };
   }
   if (pathname === "/access-log") {
-    return { title: "Access", crumbs: [{ label: "Access Log" }] };
+    return { title: "Access", crumbs: [{ label: "Access" }] };
   }
   if (pathname.startsWith("/reports/presence")) {
     return {
