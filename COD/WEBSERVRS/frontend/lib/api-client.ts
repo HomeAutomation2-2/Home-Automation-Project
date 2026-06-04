@@ -5,6 +5,14 @@ import type { UnifiedLog } from "@/lib/types/log";
 import type { Room } from "@/lib/types/room";
 import type { TempProgram } from "@/lib/types/temp-program";
 import type { UserMe } from "@/lib/types/user-me";
+import type {
+  AdminUserDetail,
+  CreateUserRequest,
+  DeviceBindingStatus,
+  InitiateDeviceBindingResponse,
+  SuspendUserResponse,
+  UpdateUserRequest,
+} from "@/lib/types/admin-user";
 import type { UserPresenceItem } from "@/lib/types/user-presence";
 
 type NestErrorBody = {
@@ -81,6 +89,53 @@ export class ApiClient {
   /** GET /heating-programs */
   async getHeatingPrograms(): Promise<TempProgram[]> {
     return this.request<TempProgram[]>("/heating-programs");
+  }
+
+  /** POST /users/register (admin) */
+  async registerUser(body: CreateUserRequest): Promise<{ id: number }> {
+    return this.request<{ id: number }>("/users/register", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  /** GET /users/:id (admin) */
+  async getUserById(id: number): Promise<AdminUserDetail> {
+    return this.request<AdminUserDetail>(`/users/${id}`);
+  }
+
+  /** PATCH /users/:id (admin) */
+  async updateUser(id: number, body: UpdateUserRequest): Promise<AdminUserDetail> {
+    return this.request<AdminUserDetail>(`/users/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  }
+
+  /** PATCH /users/:id/suspend — comută suspendat/activ */
+  async suspendUser(id: number): Promise<SuspendUserResponse> {
+    return this.request<SuspendUserResponse>(`/users/${id}/suspend`, {
+      method: "PATCH",
+    });
+  }
+
+  /** GET /users/:id/device-binding (admin) */
+  async getDeviceBinding(id: number): Promise<DeviceBindingStatus> {
+    return this.request<DeviceBindingStatus>(`/users/${id}/device-binding`);
+  }
+
+  /** POST /users/:id/device-binding — generează token de asociere */
+  async initiateDeviceBinding(id: number): Promise<InitiateDeviceBindingResponse> {
+    return this.request<InitiateDeviceBindingResponse>(`/users/${id}/device-binding`, {
+      method: "POST",
+    });
+  }
+
+  /** DELETE /users/:id/device-binding */
+  async revokeDeviceBinding(id: number): Promise<void> {
+    return this.request<void>(`/users/${id}/device-binding`, {
+      method: "DELETE",
+    });
   }
 
   private async request<T>(

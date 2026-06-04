@@ -7,6 +7,7 @@ import {
   isAuthenticated as readIsAuthenticated,
   login as authLogin,
   logout as authLogout,
+  persistIsAdmin,
 } from "@/lib/auth";
 import type { UserMe } from "@/lib/types/user-me";
 import { ApiError } from "@/lib/types/api";
@@ -42,6 +43,7 @@ export function useAuth() {
 
     try {
       const me = await getApiClient().getMe();
+      persistIsAdmin(me.isAdmin);
       setState({
         isAuthenticated: true,
         isAdmin: me.isAdmin,

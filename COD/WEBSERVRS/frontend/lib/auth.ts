@@ -31,6 +31,34 @@ export function isAuthenticated(): boolean {
   return getToken() !== null && getToken() !== "";
 }
 
+/** Citește token din cookie (oglindă middleware). */
+export function readTokenFromCookie(): string | null {
+  if (!isBrowser()) return null;
+  const match = document.cookie.match(
+    new RegExp(`(?:^|; )${AUTH_COOKIE_NAME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}=([^;]*)`),
+  );
+  if (!match?.[1]) return null;
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return match[1];
+  }
+}
+
+/**
+ * Sincronizează localStorage din cookie dacă middleware a trecut dar LS e gol.
+ * Rezolvă „nu pot accesa paginile” după refresh sau tab nou.
+ */
+export function syncSessionFromCookie(): boolean {
+  if (!isBrowser()) return false;
+  const fromCookie = readTokenFromCookie();
+  if (!fromCookie) return false;
+  if (!localStorage.getItem(AUTH_TOKEN_KEY)) {
+    localStorage.setItem(AUTH_TOKEN_KEY, fromCookie);
+  }
+  return true;
+}
+
 export function isAdmin(): boolean {
   if (!isBrowser()) return false;
   return localStorage.getItem(IS_ADMIN_KEY) === "true";
@@ -49,8 +77,22 @@ function persistToken(token: string): void {
   setAuthCookie(token);
 }
 
-function persistIsAdmin(value: boolean): void {
+export function persistIsAdmin(value: boolean): void {
+  if (!isBrowser()) return;
   localStorage.setItem(IS_ADMIN_KEY, value ? "true" : "false");
+}
+
+/** Reîmprospătează isAdmin din API (după login, refresh sau sync cookie). */
+export async function refreshSessionFromApi(): Promise<UserMe | null> {
+  syncSessionFromCookie();
+  if (!isAuthenticated()) return null;
+  try {
+    const me = await getApiClient().getMe();
+    persistIsAdmin(me.isAdmin);
+    return me;
+  } catch {
+    return null;
+  }
 }
 
 let apiClientInstance: ApiClient | null = null;

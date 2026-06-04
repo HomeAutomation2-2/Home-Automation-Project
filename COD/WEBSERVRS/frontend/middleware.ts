@@ -15,7 +15,16 @@ export function middleware(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
-  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  const rawToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  const token = rawToken
+    ? (() => {
+        try {
+          return decodeURIComponent(rawToken);
+        } catch {
+          return rawToken;
+        }
+      })()
+    : undefined;
 
   if (!token && !isPublic) {
     const loginUrl = new URL("/login", request.url);

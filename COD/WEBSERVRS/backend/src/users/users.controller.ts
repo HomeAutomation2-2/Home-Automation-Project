@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Logger, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Logger, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { SessionGuard } from './guards/session.guard';
 import { GetUser } from './decorators/get-user.decorator';
 import { User } from './entities/user.entity';
@@ -20,6 +21,7 @@ export class UsersController
 
 
     @Post("register")
+    @UseGuards(AdminSessionGuard)
     async registre(@Body() user_data: CreateUserDto)
     {
         this.logger.log(`Regiester request for user: ${user_data}`)
@@ -69,6 +71,31 @@ export class UsersController
 
 
     /**
+     * Device binding status (admin).
+     */
+    @Get(':id/device-binding')
+    @UseGuards(AdminSessionGuard)
+    async getDeviceBinding(@Param('id', ParseIntPipe) id: number) 
+    {
+        return this.usersService.getDeviceBinding(id);
+    }
+
+    @Post(':id/device-binding')
+    @UseGuards(AdminSessionGuard)
+    async initiateDeviceBinding(@Param('id', ParseIntPipe) id: number) 
+    {
+        return this.usersService.initiateDeviceBinding(id);
+    }
+
+    @Delete(':id/device-binding')
+    @HttpCode(204)
+    @UseGuards(AdminSessionGuard)
+    async revokeDeviceBinding(@Param('id', ParseIntPipe) id: number) 
+    {
+        await this.usersService.revokeDeviceBinding(id);
+    }
+
+    /**
      * View details about a user. Only for admins.
      * @param target_user_id The ID of the user you want to see.
      * @returns The user data.
@@ -78,6 +105,19 @@ export class UsersController
     async getUserDetailsForAdmin(@Param('id', ParseIntPipe) target_user_id: number) 
     {
         return this.usersService.getDetailedProfileForAdmin(target_user_id)
+    }
+
+    /**
+     * Update user profile fields (admin).
+     */
+    @Patch(':id')
+    @UseGuards(AdminSessionGuard)
+    async updateUser(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() body: UpdateUserDto,
+    ) 
+    {
+        return this.usersService.updateUser(id, body);
     }
 
     /**
