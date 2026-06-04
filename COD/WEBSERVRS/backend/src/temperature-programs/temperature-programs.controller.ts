@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { TemperatureProgramsService } from './temperature-programs.service';
 import { CreateTemperatureProgramDto } from './dto/create-program.dto';
+import { SessionGuard } from '../users/guards/session.guard';
 
 
 
+@UseGuards(SessionGuard)
 @Controller('heating-programs')
 export class TemperatureProgramsController
 {

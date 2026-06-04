@@ -18,7 +18,12 @@ import { AdminSessionGuard } from './guards/admin-session.guard';
         SessionGuard,
         AdminSessionGuard,
     ],
-    exports: [UsersService],
+    exports: [
+        UsersService,
+        SessionGuard,
+        AdminSessionGuard,
+        TypeOrmModule,
+    ],
 })
 
 export class UsersModule {}

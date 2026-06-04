@@ -1,12 +1,14 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { LightZonesService } from './light-zones.service';
 import { GetLightZoneRequestDto } from './dto/get-light-zone-request.dto';
 import { GetLightZonesRequestDto } from './dto/get-light-zones-request.dto';
 import { UpdateLightZoneDto } from './dto/update-light-zone.dto';
 import { CreateLightZoneDto } from './dto/create-light-zone.dto';
+import { SessionGuard } from '../users/guards/session.guard';
 
 
 
+@UseGuards(SessionGuard)
 @Controller('light-zones')
 export class LightZonesController 
 {
