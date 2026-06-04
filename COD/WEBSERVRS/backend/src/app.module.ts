@@ -9,9 +9,12 @@ import { TemperatureReadingsModule } from './temperature-readings/temperature-re
 import { EventsModule } from './events/events.module';
 import { AppController } from './app.controller';
 import { HomeSettingsModule } from './home-settings/home-settings.module';
+import { DevicesModule } from './devices/device.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -29,7 +32,8 @@ import { HomeSettingsModule } from './home-settings/home-settings.module';
     TemperatureProgramsModule,
     TemperatureReadingsModule,
     EventsModule,
-    HomeSettingsModule
+    HomeSettingsModule,
+    DevicesModule
   ],
   controllers: [AppController]
 })
