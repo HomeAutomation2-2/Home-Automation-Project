@@ -14,7 +14,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen flex-col md:pl-[240px]">
         <MobileNav />
         <TopAppBar />
-        <main className="flex-1 overflow-auto bg-white px-6 py-6 md:px-[72px] md:py-6">
+        <main className="flex-1 overflow-auto bg-[#faf8ff] p-6">
           {children}
         </main>
       </div>
