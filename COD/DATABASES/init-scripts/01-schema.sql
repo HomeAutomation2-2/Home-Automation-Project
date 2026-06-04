@@ -78,3 +78,9 @@ CREATE TABLE IF NOT EXISTS home_settings (
     hysteresis      DECIMAL(4,2) NOT NULL,
     antifreeze_temp DECIMAL(4,2) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS devices (
+    id         SERIAL       PRIMARY KEY,
+    ip         VARCHAR(45)  NOT NULL,
+    last_seen  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
