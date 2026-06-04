@@ -1,0 +1,215 @@
+#include <WiFi.h>
+#include <WebServer.h>
+#include <ArduinoJson.h>
+#include <HTTPClient.h>
+
+// const char *ssid = "Orange-H7XZR3-2G";
+// const char *password = "QTfDNCdtskZh4Z5PKZ";
+
+
+const char *ssid = "Serban Iphone";
+const char *password = "Penispenis";
+
+
+String LED_node="192.168.1.90"; 
+String CENTRALA_node = "192.168.1.91"; 
+String State_LED="LOW";
+
+float Temp_Room1 = 0.0;
+float Temp_Room2 = 0.0;
+unsigned long IntervalSenzori = 20000; // default: 10 secunde
+
+IPAddress local_IP(192, 168, 1, 93);   // The IP you want for the ESP32
+IPAddress gateway(192, 168, 1, 1);    // Your router's IP
+IPAddress subnet(255, 255, 255, 0);
+
+#define LED_PIN 2 // Built-in LED on most ESP32s
+WebServer server(80);
+
+void handleAPI() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "text/plain", "No Data");
+    return;
+  }
+
+  StaticJsonDocument<200> doc;
+  deserializeJson(doc, server.arg("plain"));
+
+  String type = doc["type"];
+  String id = doc["device_id"]; 
+
+  // Logic for the Button ESP01
+  if (type == "button") {
+    String action = doc["action"];
+    if (action == "toggle") {
+      if(State_LED=="LOW"){ // Flip the LED state
+        State_LED="HIGH";
+        sendCommandToNode(LED_node, State_LED);
+      }else{
+        State_LED="LOW";
+        sendCommandToNode(LED_node, State_LED);
+      }
+      Serial.println("Button Pressed: LED Toggled!");
+    }
+  } 
+  
+  // Logic for the DHT11 ESP01
+  else if (type == "sensor") {
+      if(id=="ESP01_DHT11_ROOM1"){
+        Temp_Room1 = doc["temp"];
+        float hum = doc["hum"];
+        Serial.printf("Sensor Update ROOM 1-> Temp: %.1fC, Hum: %.1f%%\n", Temp_Room1, hum);
+      } else {
+        Temp_Room2 = doc["temp"];
+        float hum = doc["hum"];
+        Serial.printf("Sensor Update ROOM 2-> Temp: %.1fC, Hum: %.1f%%\n", Temp_Room2, hum);
+      }
+
+
+  }
+  String jsonResponse = "{\"status\":\"ok\", \"interval\":" + String(IntervalSenzori) + "}";
+  server.send(200, "application/json", jsonResponse);
+}
+
+// --- ENDPOINT NOU: /api/temp ---
+void handleApiTemp() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "text/plain", "No Data");
+    return;
+  }
+
+  StaticJsonDocument<200> doc;
+  deserializeJson(doc, server.arg("plain"));
+
+  String id_camera = doc["id_camera"];
+  float target_temp = doc["temp"];
+  float current_temp = 0.0;
+
+  // Alegem temperatura in functie de camera
+  if (id_camera == "ROOM1") {
+    current_temp = Temp_Room1;
+  } else if (id_camera == "ROOM2") {
+    current_temp = Temp_Room2;
+  }
+
+  Serial.printf("Cerere temp pentru %s. Target: %.1fC, Curent: %.1fC\n", id_camera.c_str(), target_temp, current_temp);
+
+  // Logica calorifer
+  if (target_temp > Temp_Room1 || target_temp > Temp_Room2) {
+    Serial.println("Temperatura ceruta e mai mare. Pornim centrala!");
+    sendCommandToNode(CENTRALA_node, "HIGH");
+  } else {
+    Serial.println("Temperatura a fost atinsa. Oprim centrala!");
+    sendCommandToNode(CENTRALA_node, "LOW");
+  }
+
+  server.send(200, "application/json", "{\"status\":\"temp_processed\"}");
+}
+
+// --- ENDPOINT NOU: /api/lights ---
+void handleApiLights() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "text/plain", "No Data");
+    return;
+  }
+
+  StaticJsonDocument<200> doc;
+  deserializeJson(doc, server.arg("plain"));
+
+  String id_camera = doc["id_camera"];
+  bool is_on = doc["is_on"];
+
+  if(is_on){
+    sendCommandToNode(LED_node, "HIGH");
+    State_LED="HIGH";
+  }else{
+    sendCommandToNode(LED_node, "LOW");
+    State_LED="LOW";
+  }
+  Serial.printf("Stare lumini in %s: %s\n", id_camera.c_str(), is_on ? "APRINS" : "STINS");
+  server.send(200, "application/json", "{\"status\":\"lights_processed\"}");
+
+}
+
+// --- ENDPOINT NOU: /api/rand ---
+void handleApiRand() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "text/plain", "No Data");
+    return;
+  }
+
+  StaticJsonDocument<200> doc;
+  deserializeJson(doc, server.arg("plain"));
+
+  unsigned long val = doc["timp_esantion"];
+  if(val>0) IntervalSenzori=val;
+  Serial.printf("Endpoint /api/rand a fost apelat. Interval= %d ms\n", IntervalSenzori);
+  server.send(200, "application/json", "{\"status\":\"rand_ok\"}");
+  
+}
+
+void sendCommandToNode(String nodeIP, String state) {
+  WiFiClient client;
+  HTTPClient http;
+
+  // The ESP01 will be listening on the /control path
+  String url = "http://" + nodeIP + "/control";
+  
+  http.begin(client, url);
+  http.addHeader("Content-Type", "application/json");
+
+  // Create the command JSON
+  StaticJsonDocument<200> doc;
+  doc["cmd"] = "set_gpio";
+  //doc["pin"] = 2;
+  doc["val"] = state; // "HIGH" or "LOW"
+
+  String requestBody;
+  serializeJson(doc, requestBody);
+
+  int httpResponseCode = http.POST(requestBody);
+
+  if (httpResponseCode > 0) {
+    Serial.printf("Command sent to %s. Response: %d\n", nodeIP.c_str(), httpResponseCode);
+  } else {
+    Serial.printf("Failed to reach Node at %s\n", nodeIP.c_str());
+  }
+  
+  //http.end();
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  
+  if (!WiFi.config(local_IP, gateway, subnet)) {
+    Serial.println("STA Failed to configure Static IP");
+  }
+
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nWiFi connected.");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP()); 
+
+  server.on("/api", HTTP_POST, handleAPI);
+  server.on("/api/temp", HTTP_POST, handleApiTemp);
+  server.on("/api/lights", HTTP_POST, handleApiLights);
+  server.on("/api/rand", HTTP_POST, handleApiRand);
+
+  server.begin();
+  Serial.println("Server listening on /api");
+}
+
+void loop() {
+  server.handleClient();
+  // delay(10000);
+  // sendCommandToNode(LED_node, "HIGH");
+  // delay(10000);
+  // sendCommandToNode(LED_node, "LOW");
+
+}

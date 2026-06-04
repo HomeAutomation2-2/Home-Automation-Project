@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BackendV2 Minimal Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">BlueLock BackendV2</p>
+          <h1>Minimal dashboard</h1>
+          <p>
+            Interfata mica pentru health, login, rooms, lights, heating si
+            embedded smoke tests.
+          </p>
+        </div>
+        <div class="server-card">
+          <label for="serverUrl">Server URL</label>
+          <input id="serverUrl" value="http://localhost:3500" />
+          <button id="saveServerButton">Salveaza URL</button>
+        </div>
+      </section>
+
+      <section class="grid two-columns">
+        <article class="card">
+          <h2>1. Login test</h2>
+          <div class="form-grid">
+            <label>
+              Telefon
+              <input id="phoneInput" value="0711111111" />
+            </label>
+            <label>
+              Parola
+              <input id="passwordInput" type="password" value="test1234" />
+            </label>
+          </div>
+          <div class="actions">
+            <button id="loginButton">Login</button>
+            <button id="logoutButton" class="secondary">Logout</button>
+          </div>
+          <pre id="authOutput">Nu esti autentificat.</pre>
+        </article>
+
+        <article class="card">
+          <h2>2. Health + embedded</h2>
+          <div class="actions">
+            <button id="healthButton">Verifica health</button>
+            <button id="embeddedButton">Simuleaza ESP32 register</button>
+          </div>
+          <pre id="healthOutput">Apasa un buton.</pre>
+        </article>
+      </section>
+
+      <section class="card">
+        <h2>3. Date principale</h2>
+        <div class="actions">
+          <button id="loadDataButton">Incarca date</button>
+          <button id="toggleFirstLightButton" class="secondary">Toggle prima lumina</button>
+          <button id="sendTempButton" class="secondary">Trimite temp mock ROOM1</button>
+        </div>
+        <div id="summary" class="summary-grid"></div>
+      </section>
+
+      <section class="grid three-columns">
+        <article class="card">
+          <h2>Rooms</h2>
+          <div id="roomsList" class="list"></div>
+        </article>
+        <article class="card">
+          <h2>Light zones</h2>
+          <div id="lightsList" class="list"></div>
+        </article>
+        <article class="card">
+          <h2>Heating programs</h2>
+          <div id="programsList" class="list"></div>
+        </article>
+      </section>
+
+      <section class="grid two-columns">
+        <article class="card">
+          <h2>Presence</h2>
+          <div id="presenceList" class="list"></div>
+        </article>
+        <article class="card">
+          <h2>Logs</h2>
+          <div id="logsList" class="list"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,807 @@
+/*
+  BlueLock ESP32 Gateway - BackendV2 ready
+
+  Roluri:
+  - valideaza local accesul prin BLE, fara dependenta de backend in momentul deschiderii usii
+  - pastreaza endpointurile HTTP existente: /api, /api/temp, /api/lights, /api/rand
+  - face handshake cu BackendV2 la pornire
+  - primeste/salveaza local coduri BLE autorizate
+  - trimite heartbeat, temperaturi si evenimente de acces catre backend cand este online
+
+  Biblioteci Arduino necesare:
+  - WiFi
+  - WebServer
+  - HTTPClient
+  - ArduinoJson
+  - BLEDevice / BLEServer / BLEUtils
+*/
+
+#include <WiFi.h>
+#include <WebServer.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+#include "mbedtls/md.h"
+#include <vector>
+
+// =========================
+// Configurare proiect
+// =========================
+
+const char *WIFI_SSID = "CHANGE_ME_WIFI";
+const char *WIFI_PASSWORD = "CHANGE_ME_PASSWORD";
+
+const char *DEVICE_ID = "ESP32_MAIN_GATEWAY";
+const char *DEVICE_TYPE = "gateway";
+const char *FIRMWARE_VERSION = "backend-v2-esp32-0.1";
+
+// Exemplu: "http://192.168.1.50:3000"
+String BACKEND_BASE_URL = "http://CHANGE_ME_BACKEND_IP:3000";
+
+// Token primit de la backend dupa /embedded/register.
+// Pentru prototip poate ramane "dev-device-token" pana implementam pairing real.
+String deviceToken = "dev-device-token";
+
+// IP-uri module ESP01 existente.
+String LED_NODE_IP = "192.168.1.90";
+String BOILER_NODE_IP = "192.168.1.91";
+
+IPAddress localIp(192, 168, 1, 93);
+IPAddress gatewayIp(192, 168, 1, 1);
+IPAddress subnetMask(255, 255, 255, 0);
+
+// Pinuri locale ESP32.
+const int STATUS_LED_PIN = 2;
+const int LOCK_PIN = 4;
+
+// BLE UUID-uri. Pot fi pastrate identic in aplicatia mobila.
+const char *BLE_SERVICE_UUID = "5f9d8f10-1f2a-4d2a-9d9d-000000000001";
+const char *BLE_ACCESS_UUID = "5f9d8f10-1f2a-4d2a-9d9d-000000000002";
+const char *BLE_STATUS_UUID = "5f9d8f10-1f2a-4d2a-9d9d-000000000003";
+
+// =========================
+// Stare locala
+// =========================
+
+WebServer server(80);
+BLECharacteristic *accessStatusCharacteristic = nullptr;
+
+struct AccessCodeEntry {
+  int userId;
+  String codeHash;
+  int epoch;
+  bool isActive;
+};
+
+std::vector<AccessCodeEntry> accessCodes;
+
+float tempRoom1 = 0.0;
+float tempRoom2 = 0.0;
+float targetRoom1 = 21.0;
+float targetRoom2 = 21.0;
+float hysteresis = 0.5;
+
+bool lightRoom1On = false;
+bool lightRoom2On = false;
+bool boilerOn = false;
+bool doorOpen = false;
+
+unsigned long sensorIntervalMs = 20000;
+unsigned long lastHeartbeatAt = 0;
+unsigned long lastPendingFlushAt = 0;
+unsigned long unlockUntil = 0;
+
+const unsigned long HEARTBEAT_INTERVAL_MS = 15000;
+const unsigned long PENDING_FLUSH_INTERVAL_MS = 10000;
+const unsigned long DOOR_UNLOCK_MS = 5000;
+
+const int MAX_PENDING_EVENTS = 20;
+String pendingEvents[MAX_PENDING_EVENTS];
+int pendingEventCount = 0;
+
+// =========================
+// Utilitare JSON / HTTP
+// =========================
+
+String sha256Hex(const String &input) {
+  byte hash[32];
+
+  mbedtls_md_context_t ctx;
+  mbedtls_md_type_t mdType = MBEDTLS_MD_SHA256;
+
+  mbedtls_md_init(&ctx);
+  mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(mdType), 0);
+  mbedtls_md_starts(&ctx);
+  mbedtls_md_update(&ctx, (const unsigned char *)input.c_str(), input.length());
+  mbedtls_md_finish(&ctx, hash);
+  mbedtls_md_free(&ctx);
+
+  String result = "";
+  for (int i = 0; i < 32; i++) {
+    char hex[3];
+    sprintf(hex, "%02x", hash[i]);
+    result += hex;
+  }
+
+  return result;
+}
+
+bool postJson(const String &url, const String &body, String &responseBody) {
+  if (WiFi.status() != WL_CONNECTED) {
+    return false;
+  }
+
+  WiFiClient client;
+  HTTPClient http;
+
+  http.setTimeout(3000);
+  http.begin(client, url);
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("X-Device-Id", DEVICE_ID);
+  http.addHeader("X-Device-Token", deviceToken);
+
+  int statusCode = http.POST(body);
+  responseBody = http.getString();
+  http.end();
+
+  return statusCode >= 200 && statusCode < 300;
+}
+
+void enqueuePendingEvent(const String &eventJson) {
+  if (pendingEventCount >= MAX_PENDING_EVENTS) {
+    for (int i = 1; i < MAX_PENDING_EVENTS; i++) {
+      pendingEvents[i - 1] = pendingEvents[i];
+    }
+    pendingEventCount = MAX_PENDING_EVENTS - 1;
+  }
+
+  pendingEvents[pendingEventCount] = eventJson;
+  pendingEventCount++;
+}
+
+void flushPendingEvents() {
+  if (pendingEventCount == 0 || WiFi.status() != WL_CONNECTED) {
+    return;
+  }
+
+  int writeIndex = 0;
+
+  for (int i = 0; i < pendingEventCount; i++) {
+    StaticJsonDocument<512> doc;
+    DeserializationError error = deserializeJson(doc, pendingEvents[i]);
+
+    if (error) {
+      continue;
+    }
+
+    const char *type = doc["type"] | "";
+    String url = BACKEND_BASE_URL;
+
+    if (strcmp(type, "access") == 0) {
+      url += "/embedded/events/access";
+    } else if (strcmp(type, "temperature") == 0) {
+      url += "/embedded/readings/temperature";
+    } else {
+      continue;
+    }
+
+    String response;
+    bool sent = postJson(url, pendingEvents[i], response);
+
+    if (!sent) {
+      pendingEvents[writeIndex] = pendingEvents[i];
+      writeIndex++;
+    }
+  }
+
+  pendingEventCount = writeIndex;
+}
+
+// =========================
+// Backend sync
+// =========================
+
+void applyAccessCodes(JsonArray codes) {
+  accessCodes.clear();
+
+  for (JsonObject item : codes) {
+    AccessCodeEntry entry;
+    entry.userId = item["user_id"] | 0;
+    entry.codeHash = String((const char *)(item["code_hash"] | ""));
+    entry.epoch = item["epoch"] | 1;
+    entry.isActive = item["is_active"] | true;
+
+    if (entry.userId > 0 && entry.codeHash.length() == 64) {
+      accessCodes.push_back(entry);
+    }
+  }
+
+  Serial.printf("Access codes synced: %d\n", accessCodes.size());
+}
+
+void applyBackendConfig(const String &json) {
+  DynamicJsonDocument doc(4096);
+  DeserializationError error = deserializeJson(doc, json);
+
+  if (error) {
+    Serial.println("Could not parse backend config");
+    return;
+  }
+
+  deviceToken = String((const char *)(doc["device_token"] | deviceToken.c_str()));
+  sensorIntervalMs = doc["sample_interval_ms"] | sensorIntervalMs;
+  hysteresis = doc["hysteresis"] | hysteresis;
+
+  if (doc["rooms"].is<JsonArray>()) {
+    for (JsonObject room : doc["rooms"].as<JsonArray>()) {
+      String code = String((const char *)(room["code"] | ""));
+      float target = room["target_temp"] | 21.0;
+
+      if (code == "ROOM1") {
+        targetRoom1 = target;
+      } else if (code == "ROOM2") {
+        targetRoom2 = target;
+      }
+    }
+  }
+
+  if (doc["light_zones"].is<JsonArray>()) {
+    for (JsonObject zone : doc["light_zones"].as<JsonArray>()) {
+      String roomCode = String((const char *)(zone["room_code"] | ""));
+      bool isOn = zone["is_on"] | false;
+
+      if (roomCode == "ROOM1") {
+        lightRoom1On = isOn;
+      } else if (roomCode == "ROOM2") {
+        lightRoom2On = isOn;
+      }
+    }
+  }
+
+  if (doc["access_codes"].is<JsonArray>()) {
+    applyAccessCodes(doc["access_codes"].as<JsonArray>());
+  }
+}
+
+void registerWithBackend() {
+  StaticJsonDocument<512> doc;
+  doc["device_id"] = DEVICE_ID;
+  doc["device_type"] = DEVICE_TYPE;
+  doc["firmware_version"] = FIRMWARE_VERSION;
+  doc["ip_address"] = WiFi.localIP().toString();
+
+  JsonArray capabilities = doc.createNestedArray("capabilities");
+  capabilities.add("ble_access");
+  capabilities.add("lights");
+  capabilities.add("heating");
+  capabilities.add("temperature_gateway");
+
+  String body;
+  serializeJson(doc, body);
+
+  String response;
+  bool ok = postJson(BACKEND_BASE_URL + "/embedded/register", body, response);
+
+  if (!ok) {
+    Serial.println("Backend register failed; ESP32 will continue offline");
+    return;
+  }
+
+  Serial.println("Backend register OK");
+  applyBackendConfig(response);
+}
+
+void sendHeartbeat() {
+  StaticJsonDocument<512> doc;
+  doc["device_id"] = DEVICE_ID;
+  doc["firmware_version"] = FIRMWARE_VERSION;
+  doc["ip_address"] = WiFi.localIP().toString();
+  doc["wifi_rssi"] = WiFi.RSSI();
+  doc["door_open"] = doorOpen;
+  doc["boiler_on"] = boilerOn;
+  doc["pending_events"] = pendingEventCount;
+
+  String body;
+  serializeJson(doc, body);
+
+  String response;
+  postJson(BACKEND_BASE_URL + "/embedded/heartbeat", body, response);
+}
+
+void reportTemperature(const String &roomCode, float value, float humidity) {
+  StaticJsonDocument<384> doc;
+  doc["type"] = "temperature";
+  doc["device_id"] = DEVICE_ID;
+  doc["room_code"] = roomCode;
+  doc["value"] = value;
+  doc["humidity"] = humidity;
+  doc["boiler_on"] = boilerOn;
+
+  String body;
+  serializeJson(doc, body);
+
+  String response;
+  bool sent = postJson(BACKEND_BASE_URL + "/embedded/readings/temperature", body, response);
+
+  if (!sent) {
+    enqueuePendingEvent(body);
+  }
+}
+
+void reportAccessEvent(int userId, const String &direction, bool granted) {
+  StaticJsonDocument<384> doc;
+  doc["type"] = "access";
+  doc["device_id"] = DEVICE_ID;
+  doc["user_id"] = userId;
+  doc["direction"] = direction;
+  doc["granted"] = granted;
+
+  String body;
+  serializeJson(doc, body);
+
+  String response;
+  bool sent = postJson(BACKEND_BASE_URL + "/embedded/events/access", body, response);
+
+  if (!sent) {
+    enqueuePendingEvent(body);
+  }
+}
+
+// =========================
+// Control hardware
+// =========================
+
+void sendCommandToNode(const String &nodeIp, const String &state) {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi offline; cannot reach ESP01 node");
+    return;
+  }
+
+  WiFiClient client;
+  HTTPClient http;
+  String url = "http://" + nodeIp + "/control";
+
+  http.setTimeout(2500);
+  http.begin(client, url);
+  http.addHeader("Content-Type", "application/json");
+
+  StaticJsonDocument<128> doc;
+  doc["cmd"] = "set_gpio";
+  doc["val"] = state;
+
+  String body;
+  serializeJson(doc, body);
+
+  int statusCode = http.POST(body);
+
+  if (statusCode > 0) {
+    Serial.printf("Command sent to %s. Response: %d\n", nodeIp.c_str(), statusCode);
+  } else {
+    Serial.printf("Failed to reach node %s\n", nodeIp.c_str());
+  }
+
+  http.end();
+}
+
+void updateBoilerState() {
+  bool room1NeedsHeat = tempRoom1 < (targetRoom1 - hysteresis);
+  bool room2NeedsHeat = tempRoom2 < (targetRoom2 - hysteresis);
+  bool shouldBoilerBeOn = room1NeedsHeat || room2NeedsHeat;
+
+  if (shouldBoilerBeOn == boilerOn) {
+    return;
+  }
+
+  boilerOn = shouldBoilerBeOn;
+  sendCommandToNode(BOILER_NODE_IP, boilerOn ? "HIGH" : "LOW");
+
+  StaticJsonDocument<256> doc;
+  doc["device_id"] = DEVICE_ID;
+  doc["type"] = "boiler";
+  doc["new_state"] = boilerOn;
+
+  String body;
+  serializeJson(doc, body);
+
+  String response;
+  postJson(BACKEND_BASE_URL + "/embedded/events/boiler", body, response);
+}
+
+void setLightForRoom(const String &roomCode, bool isOn) {
+  if (roomCode == "ROOM1") {
+    lightRoom1On = isOn;
+  } else if (roomCode == "ROOM2") {
+    lightRoom2On = isOn;
+  }
+
+  sendCommandToNode(LED_NODE_IP, isOn ? "HIGH" : "LOW");
+}
+
+void unlockDoor() {
+  digitalWrite(LOCK_PIN, HIGH);
+  digitalWrite(STATUS_LED_PIN, HIGH);
+  doorOpen = true;
+  unlockUntil = millis() + DOOR_UNLOCK_MS;
+  Serial.println("Door unlocked");
+}
+
+void closeDoorIfNeeded() {
+  if (!doorOpen) {
+    return;
+  }
+
+  if (millis() < unlockUntil) {
+    return;
+  }
+
+  digitalWrite(LOCK_PIN, LOW);
+  digitalWrite(STATUS_LED_PIN, LOW);
+  doorOpen = false;
+  Serial.println("Door locked");
+}
+
+// =========================
+// BLE access
+// =========================
+
+int findUserByAccessCode(const String &plainCode) {
+  String hash = sha256Hex(plainCode);
+
+  for (AccessCodeEntry entry : accessCodes) {
+    if (entry.isActive && entry.codeHash == hash) {
+      return entry.userId;
+    }
+  }
+
+  return 0;
+}
+
+String extractAccessCode(String payload, String &direction) {
+  payload.trim();
+  direction = "in";
+
+  if (payload.startsWith("{")) {
+    StaticJsonDocument<256> doc;
+    DeserializationError error = deserializeJson(doc, payload);
+
+    if (!error) {
+      direction = String((const char *)(doc["direction"] | "in"));
+      return String((const char *)(doc["code"] | ""));
+    }
+  }
+
+  return payload;
+}
+
+class AccessCodeCallback : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *characteristic) override {
+    String payload = String(characteristic->getValue().c_str());
+    String direction;
+    String code = extractAccessCode(payload, direction);
+
+    int userId = findUserByAccessCode(code);
+
+    if (userId > 0) {
+      unlockDoor();
+      reportAccessEvent(userId, direction, true);
+
+      if (accessStatusCharacteristic != nullptr) {
+        accessStatusCharacteristic->setValue("ACCESS_GRANTED");
+        accessStatusCharacteristic->notify();
+      }
+
+      Serial.printf("BLE access granted for user %d\n", userId);
+      return;
+    }
+
+    reportAccessEvent(0, direction, false);
+
+    if (accessStatusCharacteristic != nullptr) {
+      accessStatusCharacteristic->setValue("ACCESS_DENIED");
+      accessStatusCharacteristic->notify();
+    }
+
+    Serial.println("BLE access denied");
+  }
+};
+
+void setupBleAccess() {
+  BLEDevice::init("BlueLock ESP32 Gateway");
+
+  BLEServer *bleServer = BLEDevice::createServer();
+  BLEService *accessService = bleServer->createService(BLE_SERVICE_UUID);
+
+  BLECharacteristic *accessCharacteristic = accessService->createCharacteristic(
+    BLE_ACCESS_UUID,
+    BLECharacteristic::PROPERTY_WRITE
+  );
+
+  accessStatusCharacteristic = accessService->createCharacteristic(
+    BLE_STATUS_UUID,
+    BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
+  );
+
+  accessStatusCharacteristic->addDescriptor(new BLE2902());
+  accessStatusCharacteristic->setValue("READY");
+
+  accessCharacteristic->setCallbacks(new AccessCodeCallback());
+
+  accessService->start();
+  BLEAdvertising *advertising = BLEDevice::getAdvertising();
+  advertising->addServiceUUID(BLE_SERVICE_UUID);
+  advertising->setScanResponse(true);
+  advertising->start();
+
+  Serial.println("BLE access service started");
+}
+
+// =========================
+// HTTP endpoints ESP32
+// =========================
+
+void handleApiInternal() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "application/json", "{\"message\":\"No body\"}");
+    return;
+  }
+
+  StaticJsonDocument<256> doc;
+  DeserializationError error = deserializeJson(doc, server.arg("plain"));
+
+  if (error) {
+    server.send(400, "application/json", "{\"message\":\"Invalid JSON\"}");
+    return;
+  }
+
+  String type = String((const char *)(doc["type"] | ""));
+  String deviceId = String((const char *)(doc["device_id"] | ""));
+
+  if (type == "button") {
+    String action = String((const char *)(doc["action"] | ""));
+
+    if (action == "toggle") {
+      bool nextState = !lightRoom1On;
+      setLightForRoom("ROOM1", nextState);
+    }
+  } else if (type == "sensor") {
+    float temp = doc["temp"] | 0.0;
+    float humidity = doc["hum"] | 0.0;
+
+    if (deviceId == "ESP01_DHT11_ROOM1") {
+      tempRoom1 = temp;
+      reportTemperature("ROOM1", tempRoom1, humidity);
+    } else {
+      tempRoom2 = temp;
+      reportTemperature("ROOM2", tempRoom2, humidity);
+    }
+
+    updateBoilerState();
+  }
+
+  StaticJsonDocument<128> response;
+  response["status"] = "ok";
+  response["interval"] = sensorIntervalMs;
+
+  String body;
+  serializeJson(response, body);
+  server.send(200, "application/json", body);
+}
+
+void handleApiTemp() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "application/json", "{\"message\":\"No body\"}");
+    return;
+  }
+
+  StaticJsonDocument<256> doc;
+  DeserializationError error = deserializeJson(doc, server.arg("plain"));
+
+  if (error) {
+    server.send(400, "application/json", "{\"message\":\"Invalid JSON\"}");
+    return;
+  }
+
+  String roomCode = String((const char *)(doc["id_camera"] | ""));
+  float targetTemp = doc["temp"] | 21.0;
+
+  if (roomCode == "ROOM1") {
+    targetRoom1 = targetTemp;
+  } else if (roomCode == "ROOM2") {
+    targetRoom2 = targetTemp;
+  } else {
+    server.send(400, "application/json", "{\"message\":\"Unknown room\"}");
+    return;
+  }
+
+  updateBoilerState();
+
+  StaticJsonDocument<192> response;
+  response["status"] = "temp_processed";
+  response["id_camera"] = roomCode;
+  response["target_temp"] = targetTemp;
+  response["boiler_on"] = boilerOn;
+
+  String body;
+  serializeJson(response, body);
+  server.send(200, "application/json", body);
+}
+
+void handleApiLights() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "application/json", "{\"message\":\"No body\"}");
+    return;
+  }
+
+  StaticJsonDocument<256> doc;
+  DeserializationError error = deserializeJson(doc, server.arg("plain"));
+
+  if (error) {
+    server.send(400, "application/json", "{\"message\":\"Invalid JSON\"}");
+    return;
+  }
+
+  String roomCode = String((const char *)(doc["id_camera"] | ""));
+  bool isOn = doc["is_on"] | false;
+
+  if (roomCode != "ROOM1" && roomCode != "ROOM2") {
+    server.send(400, "application/json", "{\"message\":\"Unknown room\"}");
+    return;
+  }
+
+  setLightForRoom(roomCode, isOn);
+
+  StaticJsonDocument<160> response;
+  response["status"] = "lights_processed";
+  response["id_camera"] = roomCode;
+  response["is_on"] = isOn;
+
+  String body;
+  serializeJson(response, body);
+  server.send(200, "application/json", body);
+}
+
+void handleApiRand() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "application/json", "{\"message\":\"No body\"}");
+    return;
+  }
+
+  StaticJsonDocument<128> doc;
+  DeserializationError error = deserializeJson(doc, server.arg("plain"));
+
+  if (error) {
+    server.send(400, "application/json", "{\"message\":\"Invalid JSON\"}");
+    return;
+  }
+
+  unsigned long value = doc["timp_esantion"] | sensorIntervalMs;
+
+  if (value > 0) {
+    sensorIntervalMs = value;
+  }
+
+  StaticJsonDocument<128> response;
+  response["status"] = "rand_ok";
+  response["timp_esantion"] = sensorIntervalMs;
+
+  String body;
+  serializeJson(response, body);
+  server.send(200, "application/json", body);
+}
+
+void handleSyncAccessCodes() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "application/json", "{\"message\":\"No body\"}");
+    return;
+  }
+
+  DynamicJsonDocument doc(4096);
+  DeserializationError error = deserializeJson(doc, server.arg("plain"));
+
+  if (error || !doc["access_codes"].is<JsonArray>()) {
+    server.send(400, "application/json", "{\"message\":\"Invalid access code sync payload\"}");
+    return;
+  }
+
+  applyAccessCodes(doc["access_codes"].as<JsonArray>());
+
+  StaticJsonDocument<128> response;
+  response["status"] = "access_codes_synced";
+  response["count"] = accessCodes.size();
+
+  String body;
+  serializeJson(response, body);
+  server.send(200, "application/json", body);
+}
+
+void handleStatus() {
+  StaticJsonDocument<512> doc;
+  doc["device_id"] = DEVICE_ID;
+  doc["firmware_version"] = FIRMWARE_VERSION;
+  doc["ip_address"] = WiFi.localIP().toString();
+  doc["wifi_connected"] = WiFi.status() == WL_CONNECTED;
+  doc["door_open"] = doorOpen;
+  doc["boiler_on"] = boilerOn;
+  doc["temp_room1"] = tempRoom1;
+  doc["temp_room2"] = tempRoom2;
+  doc["target_room1"] = targetRoom1;
+  doc["target_room2"] = targetRoom2;
+  doc["light_room1_on"] = lightRoom1On;
+  doc["light_room2_on"] = lightRoom2On;
+  doc["access_codes_count"] = accessCodes.size();
+  doc["pending_events"] = pendingEventCount;
+
+  String body;
+  serializeJson(doc, body);
+  server.send(200, "application/json", body);
+}
+
+void setupHttpServer() {
+  server.on("/api", HTTP_POST, handleApiInternal);
+  server.on("/api/temp", HTTP_POST, handleApiTemp);
+  server.on("/api/lights", HTTP_POST, handleApiLights);
+  server.on("/api/rand", HTTP_POST, handleApiRand);
+  server.on("/api/sync-access-codes", HTTP_POST, handleSyncAccessCodes);
+  server.on("/api/status", HTTP_GET, handleStatus);
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+// =========================
+// Wi-Fi / setup / loop
+// =========================
+
+void connectWifi() {
+  if (!WiFi.config(localIp, gatewayIp, subnetMask)) {
+    Serial.println("Static IP config failed; continuing with DHCP fallback");
+  }
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("WiFi connected");
+  Serial.print("ESP32 IP: ");
+  Serial.println(WiFi.localIP());
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(STATUS_LED_PIN, OUTPUT);
+  pinMode(LOCK_PIN, OUTPUT);
+  digitalWrite(STATUS_LED_PIN, LOW);
+  digitalWrite(LOCK_PIN, LOW);
+
+  connectWifi();
+  setupHttpServer();
+  setupBleAccess();
+  registerWithBackend();
+  sendHeartbeat();
+}
+
+void loop() {
+  server.handleClient();
+  closeDoorIfNeeded();
+
+  unsigned long now = millis();
+
+  if (now - lastHeartbeatAt >= HEARTBEAT_INTERVAL_MS) {
+    lastHeartbeatAt = now;
+    sendHeartbeat();
+  }
+
+  if (now - lastPendingFlushAt >= PENDING_FLUSH_INTERVAL_MS) {
+    lastPendingFlushAt = now;
+    flushPendingEvents();
+  }
+}

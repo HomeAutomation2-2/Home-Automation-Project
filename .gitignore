@@ -32,6 +32,5 @@ pnpm-debug.log*
 # Local Docker overrides
 docker-compose.override.yml
 
-# Prisma generated client (run: npm run prisma:generate)
-COD/DATABASES/generated/
-COD/WEBSERVRS/backend/src/generated/
+# PostgreSQL data directory (Docker bind mount — local only)
+COD/DATABASES/.pgdata/

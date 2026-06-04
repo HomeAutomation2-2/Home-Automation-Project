@@ -1,8 +1,10 @@
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
-
+config({ path: resolve(__dirname, '..', '.env') });
 
 async function bootstrap() 
 {
@@ -21,6 +23,8 @@ async function bootstrap()
     // Activează validarea automată pentru toate endpoint-urile
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     
-    await app.listen(3000);
+    const port = Number(process.env.PORT ?? 3000);
+    await app.listen(port, '0.0.0.0');
+    console.log(`API: http://localhost:${port}`);
 }
 bootstrap();

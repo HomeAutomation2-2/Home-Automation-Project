@@ -1,0 +1,21 @@
+Endpointuri+json_esp32
+
+{ip_esp32}/api/temp ------> citire temperatura din camere + aprindere/stingere centrala bazat pe temp trimisa
+{
+    "id_camera": "ROOM1",
+    "temp": 20
+}
+
+{ip_esp32}/api/lights -----> aprindere/stingere LED din camere + mesaj stare LED
+{
+    "id_camera": "ROOM1",
+    "is_on": true
+}
+
+
+{ip_esp32}/api/rand  -----> perioada citire temperatura
+{
+    "timp_esantion": 2500
+}
+
+{ip_esp32}/api ----> comunicare interna intre 

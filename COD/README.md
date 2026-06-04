@@ -74,24 +74,23 @@ Trebuie sa vezi containerul `home_automation_db` cu `0.0.0.0:5433->5432/tcp`.
 ```powershell
 cd C:\Users\<USER>\Home-Automation-Project\COD\WEBSERVRS\backend
 @'
+PORT=3500
 DB_HOST=localhost
 DB_PORT=5433
 DB_USERNAME=postgres
 DB_PASSWORD=mysecretpassword
 DB_DATABASE=home_automation
-DATABASE_URL="postgresql://postgres:mysecretpassword@localhost:5433/home_automation?schema=public"
 '@ | Set-Content -Path .env -Encoding utf8
 ```
 
 ---
 
-## 4) Prisma generate + pornire backend
+## 4) Pornire backend
 
 **Terminal 1** (lasa-l deschis):
 
 ```powershell
 cd C:\Users\<USER>\Home-Automation-Project\COD\WEBSERVRS\backend
-npm run prisma:generate
 npm run start:dev
 ```
 
@@ -232,16 +231,16 @@ Apoi in app mobil: login cu acelasi telefon + parola.
 | `database "home_automation" does not exist` pe 5432 | DBeaver/backend trebuie pe port **5433**, nu 5432 |
 | `ECONNREFUSED` la backend | `docker compose up -d` + verifica `DB_PORT=5433` in `.env` |
 | Mobile `[404] GET /rooms` | Server in app = `http://localhost:3000` |
-| Prisma Studio erori | Normal; folosim schema simpla (`init-scripts`). Foloseste DBeaver/psql |
 | `npm test` OK dar `start:dev` pica | Testele nu necesita DB live; runtime da |
+| `EACCES` pe port **3000** | Windows rezerva 2936–3035 (Hyper-V/Docker). In `.env`: `PORT=3500`, apoi in app mobil `http://localhost:3500` |
 
 ---
 
 ## Ce folosim acum (DB)
 
 - **Schema activa:** `COD/DATABASES/init-scripts/01-schema.sql` (simpla, 10 tabele)
-- **Backend:** TypeORM
-- **Prisma** (`schema.prisma`): pentru viitor / migrari, nu e obligatoriu pentru dev curent
+- **Backend:** TypeORM (`synchronize: false` — schema din SQL la primul start Docker)
+- **Date locale Docker:** `COD/DATABASES/.pgdata/` (ignorat de Git, bind mount Postgres)
 
 ---
 
@@ -257,7 +256,7 @@ Apoi in app mobil: login cu acelasi telefon + parola.
 
 | Fisier | Rol |
 |--------|-----|
-| `setup-team.ps1` / `.bat` | Setup complet: deps + Docker + `.env` + prisma generate |
+| `setup-team.ps1` / `.bat` | Setup complet: deps + Docker + `.env` |
 | `install-dependencies.ps1` / `.bat` | Doar `npm install` in toate proiectele npm |
 | `DATABASES/docker-compose.yaml` | Postgres Docker |
 | `WEBSERVRS/backend/.env.example` | Template env (vezi sectiunea 3 pentru valorile corecte) |
