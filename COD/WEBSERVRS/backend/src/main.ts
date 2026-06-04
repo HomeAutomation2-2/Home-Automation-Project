@@ -10,6 +10,7 @@ async function bootstrap()
     
     app.enableCors({
         origin: [
+            'http://localhost:3001',      // Next.js WEB dev
             'http://localhost:5173',      // dev browser
             'http://localhost',           // Capacitor Android
             'capacitor://localhost',      // Capacitor iOS
