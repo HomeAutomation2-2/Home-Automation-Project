@@ -1,4 +1,7 @@
 import { ConflictException, Injectable, NotFoundException, Session, UnauthorizedException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import type { DeviceBindingStatusDto, InitiateDeviceBindingDto } from './dto/device-binding.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -170,6 +173,8 @@ export class UsersService
                 id: user.id,
                 first_name: user.firstName,
                 last_name: user.lastName,
+                phone: user.phone,
+                is_admin: user.isAdmin,
                 is_home: user.isHome,
                 is_suspended: user.isSuspended,
                 last_access_event: lastEventText
@@ -289,11 +294,87 @@ export class UsersService
         return {
             first_name: user.firstName,
             last_name: user.lastName,
+            phone: user.phone,
             cnp: user.cnp,
             is_home: user.isHome,
             is_admin: user.isAdmin,
             is_suspended: user.isSuspended
         };
+    }
+
+    async updateUser(userId: number, dto: UpdateUserDto) 
+    {
+        const user = await this.user_repository.findOne({ where: { id: userId } });
+        if (!user) throw new NotFoundException('User not found');
+
+        if (dto.phone !== undefined && dto.phone !== user.phone) {
+            const phoneTaken = await this.user_repository.findOne({ where: { phone: dto.phone } });
+            if (phoneTaken && phoneTaken.id !== userId) {
+                throw new ConflictException('A user with this phone number already exists');
+            }
+            user.phone = dto.phone;
+        }
+
+        if (dto.firstName !== undefined) user.firstName = dto.firstName;
+        if (dto.lastName !== undefined) user.lastName = dto.lastName;
+        if (dto.isAdmin !== undefined) user.isAdmin = dto.isAdmin;
+
+        if (dto.password_plaintext) {
+            const salt = await bcrypt.genSalt();
+            user.passwordHash = await bcrypt.hash(dto.password_plaintext, salt);
+        }
+
+        await this.user_repository.save(user);
+
+        return this.getDetailedProfileForAdmin(userId);
+    }
+
+    async getDeviceBinding(userId: number): Promise<DeviceBindingStatusDto> 
+    {
+        const user = await this.user_repository.findOne({ where: { id: userId } });
+        if (!user) throw new NotFoundException('User not found');
+
+        const bound = Boolean(user.btCodeHash);
+        let lastSync: string | null = null;
+
+        if (user.btCodeEpoch != null) {
+            lastSync = new Date(user.btCodeEpoch * 1000).toISOString();
+        }
+
+        return {
+            bound,
+            device_label: bound ? `Smartphone · ${user.phone}` : null,
+            last_sync: lastSync,
+        };
+    }
+
+    async initiateDeviceBinding(userId: number): Promise<InitiateDeviceBindingDto> 
+    {
+        const user = await this.user_repository.findOne({ where: { id: userId } });
+        if (!user) throw new NotFoundException('User not found');
+
+        const pairingToken = randomBytes(16).toString('hex');
+        const salt = await bcrypt.genSalt();
+        user.btCodeHash = await bcrypt.hash(pairingToken, salt);
+        user.btCodeEpoch = Math.floor(Date.now() / 1000);
+        await this.user_repository.save(user);
+
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+        return {
+            pairing_token: pairingToken,
+            expires_at: expiresAt,
+        };
+    }
+
+    async revokeDeviceBinding(userId: number): Promise<void> 
+    {
+        const user = await this.user_repository.findOne({ where: { id: userId } });
+        if (!user) throw new NotFoundException('User not found');
+
+        user.btCodeHash = null as unknown as string;
+        user.btCodeEpoch = null as unknown as number;
+        await this.user_repository.save(user);
     }
 
     async suspendUser(userId: number) 

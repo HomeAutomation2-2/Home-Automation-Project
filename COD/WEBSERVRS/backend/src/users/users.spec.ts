@@ -298,6 +298,7 @@ describe('UsersService', () =>
                 id: 1,
                 firstName: 'Mihai',
                 lastName: 'Ion',
+                phone: '0799888777',
                 cnp: '1900101123456',
                 isHome: true,
                 isAdmin: false,
@@ -311,6 +312,7 @@ describe('UsersService', () =>
             expect(result).toEqual({
                 first_name: 'Mihai',
                 last_name: 'Ion',
+                phone: '0799888777',
                 cnp: '1900101123456',
                 is_home: true,
                 is_admin: false,
@@ -323,6 +325,88 @@ describe('UsersService', () =>
             userRepo.findOne.mockResolvedValue(null);
 
             await expect(service.getDetailedProfileForAdmin(999)).rejects.toThrow(NotFoundException);
+        });
+    });
+
+
+
+    /* ─────────────────────── updateUser ─────────────────────── */
+
+    describe('updateUser', () => 
+    {
+        it('ar trebui să actualizeze câmpurile utilizatorului', async () => 
+        {
+            const user = {
+                id: 1,
+                firstName: 'Mihai',
+                lastName: 'Ion',
+                phone: '0799888777',
+                passwordHash: 'old',
+                isAdmin: false,
+            };
+            userRepo.findOne
+                .mockResolvedValueOnce(user)
+                .mockResolvedValueOnce(user);
+            userRepo.save.mockResolvedValue(user);
+
+            const result = await service.updateUser(1, {
+                firstName: 'Mihail',
+                isAdmin: true,
+            });
+
+            expect(user.firstName).toBe('Mihail');
+            expect(user.isAdmin).toBe(true);
+            expect(result.first_name).toBe('Mihail');
+        });
+
+        it('ar trebui să arunce ConflictException dacă telefonul este deja folosit', async () => 
+        {
+            const user = { id: 1, phone: '0799888777' };
+            userRepo.findOne
+                .mockResolvedValueOnce(user)
+                .mockResolvedValueOnce({ id: 2, phone: '0700111222' });
+
+            await expect(
+                service.updateUser(1, { phone: '0700111222' }),
+            ).rejects.toThrow(ConflictException);
+        });
+    });
+
+
+
+    /* ─────────────────────── device binding ─────────────────────── */
+
+    describe('getDeviceBinding', () => 
+    {
+        it('ar trebui să raporteze bound=false când nu există hash', async () => 
+        {
+            userRepo.findOne.mockResolvedValue({
+                id: 1,
+                phone: '0799888777',
+                btCodeHash: null,
+                btCodeEpoch: null,
+            });
+
+            const result = await service.getDeviceBinding(1);
+
+            expect(result.bound).toBe(false);
+            expect(result.device_label).toBeNull();
+        });
+
+        it('ar trebui să raporteze bound=true când există hash', async () => 
+        {
+            userRepo.findOne.mockResolvedValue({
+                id: 1,
+                phone: '0799888777',
+                btCodeHash: 'abc',
+                btCodeEpoch: 1_700_000_000,
+            });
+
+            const result = await service.getDeviceBinding(1);
+
+            expect(result.bound).toBe(true);
+            expect(result.device_label).toContain('0799888777');
+            expect(result.last_sync).not.toBeNull();
         });
     });
 
