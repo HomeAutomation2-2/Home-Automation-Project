@@ -1,100 +1,93 @@
-// #include <ESP8266WiFi.h>
-// #include <ESP8266HTTPClient.h>
-// #include <WiFiClient.h>
-
-// const char *ssid = "Orange-H7XZR3-2G";
-// const char *password = "QTfDNCdtskZh4Z5PKZ";
-// const char* serverIP = "http://192.168.1.93/toggle"; // Update this!
-
-// const int buttonPin = 3;
-// bool lastButtonState = HIGH;
-
-// void setup() {
-//   Serial.begin(115200);
-//   pinMode(buttonPin, INPUT_PULLUP); // Use internal pull-up
-
-//   WiFi.begin(ssid, password);
-//   while (WiFi.status() != WL_CONNECTED) {
-//     delay(500);
-//     Serial.print(".");
-//   }
-//   Serial.println("\nConnected to WiFi");
-// }
-
-// void loop() {
-//   bool currentButtonState = digitalRead(buttonPin);
-
-//   // Detect falling edge (press)
-//   if (currentButtonState == LOW && lastButtonState == HIGH) {
-//     Serial.println("Button Pressed! Sending request...");
-    
-//     if (WiFi.status() == WL_CONNECTED) {
-//       WiFiClient client;
-//       HTTPClient http;
-      
-//       http.begin(client, serverIP);
-//       int httpCode = http.GET();
-      
-//       if (httpCode > 0) {
-//         Serial.printf("Server response: %d\n", httpCode);
-//       } else {
-//         Serial.printf("Error: %s\n", http.errorToString(httpCode).c_str());
-//       }
-//       http.end();
-//     }
-//     delay(200); // Simple debounce
-//   }
-//   lastButtonState = currentButtonState;
-// }
-
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
 #include <ArduinoJson.h>
 
-const char *ssid = "Orange-H7XZR3-2G";
-const char *password = "QTfDNCdtskZh4Z5PKZ";
-const char* serverUrl = "http://192.168.1.93/api";
+// ESP01 Button node - Hotspot/DHCP version
+// Upload ESP32 first, read ESP32 IP from Serial Monitor, then replace ESP32_BASE_URL.
+
+const char* WIFI_SSID = "Serban Iphone";
+const char* WIFI_PASSWORD = "Penispenis";
+
+const char* DEVICE_ID = "ESP01_BUTTON_UNIT";
+const char* ESP32_BASE_URL = "http://CHANGE_ME_ESP32_IP";
 
 #define BUTTON_PIN 3
+
 bool lastButtonState = HIGH;
 
-void setup() {
-  Serial.begin(115200);
-  pinMode(BUTTON_PIN, INPUT_PULLUP); // Use internal pullup
+bool isEsp32Configured() {
+  return String(ESP32_BASE_URL).indexOf("CHANGE_ME") < 0;
+}
 
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) delay(500);
+void connectWiFi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  Serial.printf("Connecting to Wi-Fi SSID: %s", WIFI_SSID);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("Wi-Fi connected.");
+  Serial.print("Button ESP01 IP address: ");
+  Serial.println(WiFi.localIP());
+  Serial.print("Button ESP01 MAC address: ");
+  Serial.println(WiFi.macAddress());
 }
 
 void sendToggleRequest() {
+  if (!isEsp32Configured()) {
+    Serial.println("ESP32_BASE_URL still contains CHANGE_ME. Skipping toggle.");
+    return;
+  }
+
   WiFiClient client;
   HTTPClient http;
-  
+
   StaticJsonDocument<200> doc;
   doc["type"] = "button";
+  doc["device_id"] = DEVICE_ID;
   doc["action"] = "toggle";
-  doc["device"] = "ESP01_BUTTON_UNIT";
 
-  String jsonString;
-  serializeJson(doc, jsonString);
+  String body;
+  serializeJson(doc, body);
 
-  http.begin(client, serverUrl);
+  String url = String(ESP32_BASE_URL) + "/api";
+  http.setTimeout(3000);
+  http.begin(client, url);
   http.addHeader("Content-Type", "application/json");
-  
-  int httpCode = http.POST(jsonString);
-  Serial.printf("Sent Toggle. Response: %d\n", httpCode);
+
+  int statusCode = http.POST(body);
+  String responseBody = http.getString();
   http.end();
+
+  Serial.printf("POST %s -> %d\n", url.c_str(), statusCode);
+  if (responseBody.length() > 0) Serial.println(responseBody);
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  connectWiFi();
 }
 
 void loop() {
+  if (WiFi.status() != WL_CONNECTED) {
+    connectWiFi();
+  }
+
   bool currentButtonState = digitalRead(BUTTON_PIN);
 
-  // Detect transition from HIGH to LOW (Press)
   if (currentButtonState == LOW && lastButtonState == HIGH) {
-    delay(50); // Simple debounce
+    delay(50);
     if (digitalRead(BUTTON_PIN) == LOW) {
       sendToggleRequest();
     }
   }
+
   lastButtonState = currentButtonState;
 }

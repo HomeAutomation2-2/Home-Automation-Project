@@ -64,7 +64,7 @@ export function loadAppConfig(): AppConfig {
     port: readNumber('PORT', 3500),
     database: {
       host: readString('DB_HOST', 'localhost'),
-      port: readNumber('DB_PORT', 5434),
+      port: readNumber('DB_PORT', 15432),
       username: readString('DB_USERNAME', 'postgres'),
       password: readString('DB_PASSWORD', 'mysecretpassword'),
       name: readString('DB_DATABASE', 'home_automation_v2'),

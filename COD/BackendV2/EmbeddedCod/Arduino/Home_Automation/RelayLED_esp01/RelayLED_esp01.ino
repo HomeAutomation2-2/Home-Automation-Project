@@ -2,68 +2,90 @@
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
 
-const char *ssid = "Orange-H7XZR3-2G";
-const char *password = "QTfDNCdtskZh4Z5PKZ";
+// ESP01 Relay/Boiler node - Hotspot/DHCP version
 
-// IP Static pentru acest ESP01 (Calorifer)
-IPAddress local_IP(192, 168, 1, 91);
-IPAddress gateway(192, 168, 1, 1);
-IPAddress subnet(255, 255, 255, 0);
+const char* WIFI_SSID = "Serban Iphone";
+const char* WIFI_PASSWORD = "Penispenis";
+const char* DEVICE_ID = "ESP01_RELAY_BOILER";
 
-#define RELAY_PIN 2 // GPIO2 pe ESP01
+#define RELAY_PIN 2
 
 ESP8266WebServer server(80);
+String currentState = "LOW";
 
-void handleControl() {
-  if (!server.hasArg("plain")) {
-    server.send(400, "text/plain", "No Data");
-    return;
-  }
+void connectWiFi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-  StaticJsonDocument<200> doc;
-  DeserializationError error = deserializeJson(doc, server.arg("plain"));
-  
-  if (error) {
-    server.send(400, "application/json", "{\"status\":\"error\"}");
-    return;
-  }
-
-  String cmd = doc["cmd"];
-  String val = doc["val"];
-
-  if (cmd == "set_gpio") {
-    if (val == "HIGH") {
-      digitalWrite(RELAY_PIN, HIGH);
-      Serial.println("Centrala PORNITA");
-    } else if (val == "LOW") {
-      digitalWrite(RELAY_PIN, LOW);
-      Serial.println("Centrala OPRITA");
-    }
-  }
-
-  server.send(200, "application/json", "{\"status\":\"ok\"}");
-}
-
-void setup() {
-  Serial.begin(115200);
-  pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, LOW); // Oprit initial
-
-  if (!WiFi.config(local_IP, gateway, subnet)) {
-    Serial.println("Static IP Failed");
-  }
-
-  WiFi.begin(ssid, password);
+  Serial.printf("Connecting to Wi-Fi SSID: %s", WIFI_SSID);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
 
-  Serial.println("\nWiFi Connected! IP: ");
+  Serial.println();
+  Serial.println("Wi-Fi connected.");
+  Serial.print("Relay ESP01 IP address: ");
   Serial.println(WiFi.localIP());
+  Serial.print("Relay ESP01 MAC address: ");
+  Serial.println(WiFi.macAddress());
+}
+
+void sendJsonStatus(int httpCode, const String& status) {
+  StaticJsonDocument<256> doc;
+  doc["device_id"] = DEVICE_ID;
+  doc["status"] = status;
+  doc["val"] = currentState;
+  doc["ip_address"] = WiFi.localIP().toString();
+
+  String response;
+  serializeJson(doc, response);
+  server.send(httpCode, "application/json", response);
+}
+
+void handleControl() {
+  if (!server.hasArg("plain")) {
+    sendJsonStatus(400, "missing_body");
+    return;
+  }
+
+  StaticJsonDocument<200> doc;
+  DeserializationError error = deserializeJson(doc, server.arg("plain"));
+
+  if (error) {
+    sendJsonStatus(400, "invalid_json");
+    return;
+  }
+
+  String cmd = String((const char*)(doc["cmd"] | ""));
+  String val = String((const char*)(doc["val"] | ""));
+
+  if (cmd != "set_gpio" || (val != "HIGH" && val != "LOW")) {
+    sendJsonStatus(400, "invalid_command");
+    return;
+  }
+
+  currentState = val;
+  digitalWrite(RELAY_PIN, currentState == "HIGH" ? HIGH : LOW);
+  Serial.println(currentState == "HIGH" ? "Boiler relay ON" : "Boiler relay OFF");
+  sendJsonStatus(200, "ok");
+}
+
+void handleStatus() {
+  sendJsonStatus(200, "ok");
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW);
+  connectWiFi();
 
   server.on("/control", HTTP_POST, handleControl);
+  server.on("/status", HTTP_GET, handleStatus);
   server.begin();
+  Serial.println("Relay ESP01 HTTP server started on port 80.");
 }
 
 void loop() {
