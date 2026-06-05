@@ -10,6 +10,9 @@ import { Room } from '../rooms/entities/room.entity';
 import { TemperatureReading } from '../temperature-readings/entities/temperature-reading.entity';
 import { LightZone } from '../light-zones/entities/light-zone.entity';
 import { BoilerEvent } from '../events/entities/boiler-event.entity';
+import { Period } from '../temperature-programs/entities/temperature-program.entity';
+import { Cron, CronExpression } from '@nestjs/schedule';
+
 
 
 
@@ -110,9 +113,152 @@ export class DevicesService
 
         if (newBoilerState !== previousBoilerState) 
         {
-            await this.settingsRepository.update({}, { boilerState: newBoilerState })
+            if (settings) 
+            {
+                settings.boilerState = newBoilerState;
+                await this.settingsRepository.save(settings)
+            } 
+            else 
+            {
+                await this.settingsRepository.insert({ boilerState: newBoilerState })
+            }
+
             await this.boilerEventsRepository.insert({ newState: newBoilerState })
+
             console.log(`[BOILER] State changed → ${newBoilerState ? 'ON' : 'OFF'}`)
+        }
+    }
+
+
+    async pushTargetTemps(): Promise<void>
+    {
+        const devices = await this.devicesRepository.find({ 
+            order: { lastSeen: 'DESC' },
+            take: 1 
+        })
+        const device = devices[0]
+
+        if (!device) 
+        {
+            console.log('[TARGET-TEMP] No device registered.')
+            return
+        }
+
+        const settings = await this.settingsRepository.findOne({ where: {} })
+        const rooms = await this.roomsRepository.find({
+            order: { id: 'ASC' },
+            take: 2,
+            relations: { tempProgram: true }
+        })
+
+        const now = new Date()
+        const payload = {
+            rooms: rooms.map(room => ({
+                id: room.id,
+                target_temp: this.resolveTargetTemp(room, now, settings?.antifreezeTemp || 0)
+            }))
+        }
+
+        try {
+            const response = await fetch(`http://${device.ip}/target-temp`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-device-secret': process.env.DEVICE_SECRET ?? ""
+                },
+                body: JSON.stringify(payload)
+            })
+
+            const body = await response.json()
+            console.log(`[TARGET-TEMP] ESP boiler state: ${body.boiler}`)
+        } 
+        catch (e) {
+            console.log('[TARGET-TEMP] Failed to reach ESP:', (e as Error).message)
+        }
+    }
+
+
+    private resolveTargetTemp(room: Room, now: Date, antifreezeTemp: number): number
+    {
+        if (!room.tempProgram?.schedule) return 0
+
+        const day = now.getDay()  // 0 = Sunday
+        const currentMinutes = now.getHours() * 60 + now.getMinutes()
+
+        const periods: Period[] = room.tempProgram.schedule
+        const todayPeriod = periods.find(p => p.days.includes(day))
+
+        if (!todayPeriod) return 0
+
+        // Find the last slot that started before now
+        const slots = [...todayPeriod.slots].sort((a, b) => 
+            this.timeToMinutes(a.time) - this.timeToMinutes(b.time)
+        )
+
+        let activeSlot = slots.findLast(slot => 
+            this.timeToMinutes(slot.time) <= currentMinutes
+        )
+
+        if (!activeSlot) return 0
+
+        if (activeSlot.temp === 'off')        return 0
+        if (activeSlot.temp === 'antifreeze') return antifreezeTemp + room.offset_value
+        
+        return (activeSlot.temp as number) + room.offset_value
+    }
+
+
+    private timeToMinutes(time: string): number
+    {
+        const [h, m] = time.split(':').map(Number)
+        return h * 60 + m
+    }
+
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async handleTempCron(): Promise<void>
+    {
+        const settings = await this.settingsRepository.findOne({ where: {} })
+        const period = settings?.samplingPeriod || 60
+
+        const now = Math.floor(Date.now() / 1000)
+        if (now % period === 0) 
+        {
+            await this.pushTargetTemps()
+        }
+    }
+
+
+    async pushLightCommand(zoneId: number, state: boolean): Promise<boolean>
+    {
+        const devices = await this.devicesRepository.find({ 
+            order: { lastSeen: 'DESC' },
+            take: 1 
+        })
+        const device = devices[0]
+
+        if (!device) {
+            console.log('[LIGHT-CHANGE] No device registered.')
+            return false
+        }
+
+        try {
+            const response = await fetch(`http://${device.ip}/light`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-device-secret': process.env.DEVICE_SECRET ?? ""
+                },
+                body: JSON.stringify({ zone_id: zoneId, state })
+            })
+
+            const body = await response.json()
+            console.log(`[LIGHT] ESP confirmed zone ${body.zone_id} → ${body.state}`)
+            return true
+        } 
+        catch (e) {
+            console.log('[LIGHT] Failed to reach ESP:', (e as Error).message)
+            return false
         }
     }
 }

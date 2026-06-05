@@ -1,9 +1,12 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { LightZonesService } from './light-zones.service';
 import { GetLightZoneRequestDto } from './dto/get-light-zone-request.dto';
 import { GetLightZonesRequestDto } from './dto/get-light-zones-request.dto';
 import { UpdateLightZoneDto } from './dto/update-light-zone.dto';
 import { CreateLightZoneDto } from './dto/create-light-zone.dto';
+import { GetUser } from '../users/decorators/get-user.decorator';
+import { User } from '../users/entities/user.entity';
+import { SessionGuard } from '../users/guards/session.guard';
 
 
 
@@ -28,11 +31,13 @@ export class LightZonesController
 
 
     @Patch(":id")
+    @UseGuards(SessionGuard)
     updateZone(
         @Param("id", ParseIntPipe) id: number,
         @Body() update_request: UpdateLightZoneDto,
+        @GetUser() user: User,
     ) {
-        return this.lightZonesService.updateZone(id, update_request);
+        return this.lightZonesService.updateZone(id, update_request, user);
     }
 
     @Post()

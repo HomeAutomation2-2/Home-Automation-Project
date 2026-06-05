@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { LightZone } from './entities/light-zone.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,9 @@ import { Room } from '../rooms/entities/room.entity';
 import { GetLightZoneRequestDto } from './dto/get-light-zone-request.dto';
 import { GetLightZonesRequestDto } from './dto/get-light-zones-request.dto';
 import { UpdateLightZoneDto } from './dto/update-light-zone.dto';
+import { DevicesService } from '../devices/devices.service';
+import { LightEvent } from '../events/entities/light-event.entity';
+import { User } from '../users/entities/user.entity';
 
 
 
@@ -19,6 +22,11 @@ export class LightZonesService
 
         @InjectRepository(Room)
         private readonly room_repository: Repository<Room>,
+
+        @InjectRepository(LightEvent)
+        private readonly light_event_repository: Repository<LightEvent>,
+
+        private readonly devicesService: DevicesService
     ) {}
 
 
@@ -81,15 +89,36 @@ export class LightZonesService
     }
 
 
-    async updateZone(id: number, update_request: UpdateLightZoneDto) 
+    async updateZone(id: number, update_request: UpdateLightZoneDto, user: User) 
     {
         const zone = await this.zone_repository.findOne({ where: { id } })
 
         if (!zone)
-            throw new NotFoundException(`Light zone with ID ${id} not found`);
+            throw new NotFoundException(`Light zone with ID ${id} not found`)
 
-        this.zone_repository.merge(zone, update_request);
+        const stateChanged = update_request.is_on !== undefined && update_request.is_on !== zone.is_on
 
-        return await this.zone_repository.save(zone);
+        if (stateChanged) 
+        {
+            const success = await this.devicesService.pushLightCommand(id, update_request.is_on!)
+            
+            if (!success)
+                throw new ServiceUnavailableException("Failed to communicate with the ESP. State not changed.")
+        }
+
+        this.zone_repository.merge(zone, update_request)
+        const saved = await this.zone_repository.save(zone)
+
+        if (stateChanged) 
+        {
+            await this.light_event_repository.save({
+                zoneId: id,
+                newState: update_request.is_on!,
+                userId: user.id
+            })
+            console.log("Hardware updated and light event saved securely.")
+        }
+
+        return saved
     }
 }

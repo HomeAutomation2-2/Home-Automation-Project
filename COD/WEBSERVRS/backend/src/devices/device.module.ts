@@ -9,21 +9,25 @@ import { Room } from '../rooms/entities/room.entity';
 import { TemperatureReading } from '../temperature-readings/entities/temperature-reading.entity';
 import { LightZone } from '../light-zones/entities/light-zone.entity';
 import { BoilerEvent } from '../events/entities/boiler-event.entity';
-
+import { ScheduleModule } from '@nestjs/schedule'
 
 
 @Module({
-    imports: [TypeOrmModule.forFeature([
-        Device, 
-        User, 
-        HomeSettings,
-        Room,
-        TemperatureReading,
-        LightZone,
-        BoilerEvent
-    ])],
+    imports: [
+        TypeOrmModule.forFeature([
+            Device, 
+            User, 
+            HomeSettings,
+            Room,
+            TemperatureReading,
+            LightZone,
+            BoilerEvent
+        ]),
+        ScheduleModule.forRoot()
+    ],
     controllers: [DevicesController],
     providers: [DevicesService],
+    exports: [DevicesService]
 })
 
 
