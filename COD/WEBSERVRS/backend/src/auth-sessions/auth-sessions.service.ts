@@ -44,6 +44,13 @@ export class AuthSessionsService
             { isActive: false }
         )
 
+        const bt_code_plaintext = Math.floor(100000 + Math.random() * 900000).toString()
+        const current_epoch = Math.floor(Date.now() / 1000)
+        user.btCodeHash = bt_code_plaintext
+        user.btCodeEpoch = current_epoch
+
+        await this.user_service.save(user)
+
         const new_session_token = crypto
             .randomBytes(32)
             .toString("hex")

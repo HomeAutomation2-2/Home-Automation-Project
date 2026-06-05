@@ -28,14 +28,6 @@ export class UsersController
     }
 
 
-    @Post("login")
-    async login(@Body() user_data: LoginUserDto)
-    {
-        this.logger.log(`Login request for user: ${user_data}`)
-        
-        return await this.usersService.loginUser(user_data)
-    }
-
     @Get('me')
     @UseGuards(SessionGuard)
     getMe(@GetUser() user: User) 
@@ -45,6 +37,7 @@ export class UsersController
         return safeUser;
     }
 
+    
     /**
      * Get the info of all users on the server.
      */

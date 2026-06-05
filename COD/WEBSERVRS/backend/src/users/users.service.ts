@@ -71,34 +71,6 @@ export class UsersService
     }
 
 
-    /**
-     * Log in a user.
-     * @param user_data The user's phone number and password.
-     * @returns The user data.
-     */
-    async loginUser(user_data: LoginUserDto): Promise<UserResponse>
-    {
-        const existing_user = await this.user_repository.findOne({
-            where: [{ phone: user_data.phone }]
-        })
-
-        if (!existing_user)
-            throw new NotFoundException("Could not find a user with this phone number")
-
-        const is_password_valid = await bcrypt.compare(user_data.password_plaintext, existing_user.passwordHash)
-
-        if (!is_password_valid)
-            throw new UnauthorizedException("Invalid credentials")
-
-        if (existing_user.isSuspended)
-            throw new UnauthorizedException("Account suspended")
-
-        const { passwordHash, sessions, ...user_without_hash } = existing_user
-        
-        return user_without_hash as UserResponse
-    }
-
-
     async getFormattedProfile(userId: number) 
     {
         const user = await this.user_repository.findOne({ where: { id: userId } });
@@ -330,5 +302,10 @@ export class UsersService
         await this.user_repository.remove(user);
 
         return { message: `User with ID ${userId} has been permanently deleted` };
+    }
+
+    async save(user: User): Promise<User> 
+    {
+        return this.user_repository.save(user);
     }
 }

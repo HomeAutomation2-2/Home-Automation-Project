@@ -13,4 +13,10 @@ export class HomeSettings
 
     @Column({ name: 'antifreeze_temp', type: 'decimal', precision: 4, scale: 2 })
     antifreezeTemp!: number;
+
+    @Column({ name: "sampling_period" })
+    samplingPeriod!: number;
+
+    @Column({ name: "boiler_state", default: false })
+    boilerState!: boolean;
 }

@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, JoinColumn } from "typeorm"
-import { TemperatureProgram } from "../../temperature-programs/entities/temperature-program.entity"
+import { LightZone } from "../../light-zones/entities/light-zone.entity"
 
 
 
@@ -23,4 +23,7 @@ export class Room
 
     @Column({ type: "int", nullable: true })
     temp_program_id!: number|null
+
+    @OneToMany(() => LightZone, (lightZone) => lightZone.room)
+    lightZones!: LightZone[]
 }
