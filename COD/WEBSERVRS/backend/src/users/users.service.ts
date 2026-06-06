@@ -10,6 +10,7 @@ import { AccessEvent } from '../events/entities/access-event.entity';
 import { UnifiedLog } from './dto/unified-log.dto';
 import { LogType } from './dto/log-type.dto';
 import { AuthSession } from '../auth-sessions/entities/auth-session.entity';
+import { DevicesService } from '../devices/devices.service';
 
 
 @Injectable()
@@ -26,6 +27,8 @@ export class UsersService
 
         @InjectRepository(AuthSession)
         private readonly session_repository: Repository<AuthSession>,
+
+        private readonly devicesService: DevicesService
     ) {}
 
 
@@ -285,6 +288,8 @@ export class UsersService
             );
         }
 
+        this.devicesService.pushBtCodes()
+
         return { 
             message: `User status updated successfully`, 
             is_suspended: user.isSuspended 
@@ -300,6 +305,8 @@ export class UsersService
 
         // 2. Ștergem utilizatorul (tabela access_events va pune automat NULL pe user_id conform bazei tale de date)
         await this.user_repository.remove(user);
+
+        this.devicesService.pushBtCodes()
 
         return { message: `User with ID ${userId} has been permanently deleted` };
     }

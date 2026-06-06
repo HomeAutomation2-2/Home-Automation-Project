@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import * as crypto from "crypto"
 import * as bcrypt from "bcrypt"
+import { DevicesService } from '../devices/devices.service';
 
 
 
@@ -15,7 +16,8 @@ export class AuthSessionsService
         @InjectRepository(AuthSession)
         private readonly session_repository: Repository<AuthSession>,
 
-        private readonly user_service: UsersService
+        private readonly user_service: UsersService,
+        private readonly devicesService: DevicesService,
     ) {}
 
 
@@ -69,6 +71,8 @@ export class AuthSessionsService
         })
 
         await this.session_repository.save(new_session)
+
+        this.devicesService.pushBtCodes()
 
         return { token: new_session_token }
     }

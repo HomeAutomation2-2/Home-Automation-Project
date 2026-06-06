@@ -22,6 +22,7 @@ import { AuthSession } from '../auth-sessions/entities/auth-session.entity';
     ]),
     UsersModule,
   ],
+  controllers: [EventsController],
   providers: [
     EventsService,
     SessionGuard,

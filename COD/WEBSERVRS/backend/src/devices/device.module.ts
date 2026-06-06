@@ -10,6 +10,7 @@ import { TemperatureReading } from '../temperature-readings/entities/temperature
 import { LightZone } from '../light-zones/entities/light-zone.entity';
 import { BoilerEvent } from '../events/entities/boiler-event.entity';
 import { ScheduleModule } from '@nestjs/schedule'
+import { TempSchedulerService } from './temp-scheduler.service';
 
 
 @Module({
@@ -26,8 +27,8 @@ import { ScheduleModule } from '@nestjs/schedule'
         ScheduleModule.forRoot()
     ],
     controllers: [DevicesController],
-    providers: [DevicesService],
-    exports: [DevicesService]
+    providers: [DevicesService, TempSchedulerService],
+    exports: [DevicesService, TempSchedulerService]
 })
 
 

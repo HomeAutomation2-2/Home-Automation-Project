@@ -21,6 +21,9 @@ export class EventsService
      */
     async syncEvents(events: CreateAccessEventDto[], userId: number) 
     {
+        console.log(`[DOOR-EVENTS] syncing ${events.length} events`)
+        console.log(events)
+
         const entities = events.map(e => this.access_events_repository.create({
             userId,
             direction: e.direction,

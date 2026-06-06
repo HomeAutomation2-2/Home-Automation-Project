@@ -4,6 +4,8 @@ import { AuthSessionsController } from './auth-sessions.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthSession } from './entities/auth-session.entity';
 import { UsersModule } from '../users/users.module';
+import { DevicesService } from '../devices/devices.service';
+import { DevicesModule } from '../devices/device.module';
 
 
 
@@ -11,9 +13,12 @@ import { UsersModule } from '../users/users.module';
     imports: [
         TypeOrmModule.forFeature([AuthSession]),
         UsersModule,
+        DevicesModule,
     ],
     controllers: [AuthSessionsController],
-    providers: [AuthSessionsService],
+    providers: [
+        AuthSessionsService,
+    ],
 })
 
 export class AuthSessionsModule {}

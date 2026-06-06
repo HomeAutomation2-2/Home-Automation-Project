@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HomeSettings } from './entities/home-settings.entity';
+import { TempSchedulerService } from '../devices/temp-scheduler.service';
 
 
 
@@ -11,6 +12,8 @@ export class HomeSettingsService
     constructor(
         @InjectRepository(HomeSettings)
         private readonly settingsRepository: Repository<HomeSettings>,
+
+        private readonly tempScheduler: TempSchedulerService,
     ) {}
 
 
@@ -33,20 +36,25 @@ export class HomeSettingsService
     }
 
 
-    async updateSettings(hysteresis: number, antifreezeTemp: number): Promise<HomeSettings> 
+    async updateSettings(hysteresis: number, antifreezeTemp: number, samplingPeriod: number): Promise<HomeSettings> 
     {
         let settings = await this.settingsRepository.findOne({ where: { id: 1 } })
 
         if (!settings) 
         {
-            settings = this.settingsRepository.create({ id: 1, hysteresis, antifreezeTemp })
+            settings = this.settingsRepository.create({ id: 1, hysteresis, antifreezeTemp, samplingPeriod })
         } 
         else 
         {
-            settings.hysteresis = hysteresis
+            settings.hysteresis     = hysteresis
             settings.antifreezeTemp = antifreezeTemp
+            settings.samplingPeriod = samplingPeriod
         }
 
-        return this.settingsRepository.save(settings)
+        const saved = await this.settingsRepository.save(settings)
+
+        this.tempScheduler.restartInterval(saved.samplingPeriod)
+
+        return saved
     }
 }

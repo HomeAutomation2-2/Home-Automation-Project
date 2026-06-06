@@ -23,7 +23,8 @@ export class HomeSettingsController
     async updateSettings(
         @Body('histerezis') hysteresis: number,
         @Body('antifreeze') antifreezeTemp: number,
+        @Body('sampling_period') samplingPeriod: number,
     ) {
-        return this.settingsService.updateSettings(hysteresis, antifreezeTemp)
+        return this.settingsService.updateSettings(hysteresis, antifreezeTemp, samplingPeriod)
     }
 }

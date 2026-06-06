@@ -6,6 +6,7 @@ import { HomeSettings } from './entities/home-settings.entity';
 import { UsersModule } from '../users/users.module';
 import { SessionGuard } from '../users/guards/session.guard';
 import { AuthSession } from '../auth-sessions/entities/auth-session.entity';
+import { DevicesModule } from '../devices/device.module';
 
 
 
@@ -13,6 +14,7 @@ import { AuthSession } from '../auth-sessions/entities/auth-session.entity';
     imports: [
         TypeOrmModule.forFeature([HomeSettings, AuthSession]),
         UsersModule,
+        DevicesModule
     ],
     controllers: [HomeSettingsController],
     providers: [HomeSettingsService, SessionGuard],

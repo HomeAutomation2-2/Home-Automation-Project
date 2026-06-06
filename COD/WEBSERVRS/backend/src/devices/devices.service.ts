@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { Device } from './entities/device.entity';
 import { RegisterDeviceDto } from './dto/create-device.dto';
 import { User } from '../users/entities/user.entity';
@@ -8,11 +8,17 @@ import { HomeSettings } from '../home-settings/entities/home-settings.entity';
 import { SensorDataDto } from './dto/sensors-data.dto';
 import { Room } from '../rooms/entities/room.entity';
 import { TemperatureReading } from '../temperature-readings/entities/temperature-reading.entity';
-import { LightZone } from '../light-zones/entities/light-zone.entity';
 import { BoilerEvent } from '../events/entities/boiler-event.entity';
-import { Period } from '../temperature-programs/entities/temperature-program.entity';
+import { Period, TimeSlot } from '../temperature-programs/entities/temperature-program.entity';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
+
+
+type TempProgram = {
+    id: number
+    name: string
+    schedule: Period[]
+}
 
 
 
@@ -34,9 +40,6 @@ export class DevicesService
 
         @InjectRepository(TemperatureReading)
         private temperatureReadingsRepository: Repository<TemperatureReading>,
-
-        @InjectRepository(LightZone)
-        private lightZonesRepository: Repository<LightZone>,
 
         @InjectRepository(BoilerEvent)
         private boilerEventsRepository: Repository<BoilerEvent>,
@@ -144,20 +147,21 @@ export class DevicesService
             return
         }
 
-        const settings = await this.settingsRepository.findOne({ where: {} })
+        const settings = await this.settingsRepository.findOne({ where: { id: 1 } })
         const rooms = await this.roomsRepository.find({
             order: { id: 'ASC' },
             take: 2,
             relations: { tempProgram: true }
         })
 
-        const now = new Date()
         const payload = {
             rooms: rooms.map(room => ({
                 id: room.id,
-                target_temp: this.resolveTargetTemp(room, now, settings?.antifreezeTemp || 0)
+                target_temp: this.resolveTargetTemp(room, room.tempProgram, settings?.antifreezeTemp || 0)
             }))
         }
+
+        console.log('[TARGET-TEMP] Pushing:', payload)
 
         try {
             const response = await fetch(`http://${device.ip}/target-temp`, {
@@ -175,43 +179,6 @@ export class DevicesService
         catch (e) {
             console.log('[TARGET-TEMP] Failed to reach ESP:', (e as Error).message)
         }
-    }
-
-
-    private resolveTargetTemp(room: Room, now: Date, antifreezeTemp: number): number
-    {
-        if (!room.tempProgram?.schedule) return 0
-
-        const day = now.getDay()  // 0 = Sunday
-        const currentMinutes = now.getHours() * 60 + now.getMinutes()
-
-        const periods: Period[] = room.tempProgram.schedule
-        const todayPeriod = periods.find(p => p.days.includes(day))
-
-        if (!todayPeriod) return 0
-
-        // Find the last slot that started before now
-        const slots = [...todayPeriod.slots].sort((a, b) => 
-            this.timeToMinutes(a.time) - this.timeToMinutes(b.time)
-        )
-
-        let activeSlot = slots.findLast(slot => 
-            this.timeToMinutes(slot.time) <= currentMinutes
-        )
-
-        if (!activeSlot) return 0
-
-        if (activeSlot.temp === 'off')        return 0
-        if (activeSlot.temp === 'antifreeze') return antifreezeTemp + room.offset_value
-        
-        return (activeSlot.temp as number) + room.offset_value
-    }
-
-
-    private timeToMinutes(time: string): number
-    {
-        const [h, m] = time.split(':').map(Number)
-        return h * 60 + m
     }
 
 
@@ -259,6 +226,128 @@ export class DevicesService
         catch (e) {
             console.log('[LIGHT] Failed to reach ESP:', (e as Error).message)
             return false
+        }
+    }
+
+
+    private resolveTargetTemp(
+        room: Room,
+        program: TempProgram | null,
+        antifreezeTemp: number,
+    ): number {
+        if (!program) return 0
+
+        const now   = new Date()
+        const today = now.getDay() // 0=Sun, 6=Sat
+        const nowMinutes = now.getHours() * 60 + now.getMinutes()
+
+        const toMinutes = (time: string) => {
+            const [h, m] = time.split(':').map(Number)
+            return h * 60 + m
+        }
+
+        // Find period for today
+        let period = program.schedule.find(p => p.days.includes(today))
+
+        // Active slot = last slot whose time <= now
+        const findActiveSlot = (p: Period): TimeSlot | null => {
+            const sorted = [...p.slots].sort((a, b) => toMinutes(a.time) - toMinutes(b.time))
+            let active: TimeSlot | null = null
+            for (const slot of sorted) {
+                if (toMinutes(slot.time) <= nowMinutes) active = slot
+            }
+            return active
+        }
+
+        let activeSlot: TimeSlot | null = period ? findActiveSlot(period) : null
+
+        // If no active slot (before first slot today), walk back through previous days
+        if (!activeSlot) {
+            for (let i = 1; i <= 6; i++) {
+                const prevDay = ((today - i) + 7) % 7
+                const prevPeriod = program.schedule.find(p => p.days.includes(prevDay))
+                if (prevPeriod) {
+                    const sorted = [...prevPeriod.slots].sort(
+                        (a, b) => toMinutes(a.time) - toMinutes(b.time)
+                    )
+                    activeSlot = sorted[sorted.length - 1] ?? null
+                    if (activeSlot) break
+                }
+            }
+        }
+
+        if (!activeSlot) return 0
+
+        if (activeSlot.temp === 'off')        return 0
+        if (activeSlot.temp === 'antifreeze') return Number(antifreezeTemp) + Number(room.offset_value)
+        return Number(activeSlot.temp) + Number(room.offset_value)
+    }
+
+
+    async getHomeSettings(): Promise<HomeSettings> 
+    {
+        const s = await this.settingsRepository.findOne({ where: { id: 1 } })
+        if (!s) throw new Error('No home_settings row found')
+        return s
+    }
+
+    /**
+     * Updates the BT codes on the ESP when a user was created/suspended/reactivated/deleted.
+     */
+    async pushBtCodes(): Promise<void> 
+    {
+        const devices = await this.devicesRepository.find({
+            order: { lastSeen: 'DESC' },
+            take: 1,
+        })
+        const device = devices[0]
+
+        if (!device) 
+        {
+            console.log('[BT-CODES] No device registered.')
+            return
+        }
+
+        const users = await this.usersRepository.find({
+            where: { 
+                isSuspended: false, 
+                btCodeHash: Not(IsNull()) 
+            },
+            select: { btCodeHash: true },
+        })
+
+        const payload = { bt_codes: users.map(u => u.btCodeHash!) }
+
+        console.log(`[BT-CODES] Pushing ${payload.bt_codes.length} codes`)
+
+        try {
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 5000)
+
+            const response = await fetch(`http://${device.ip}/update-codes`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-device-secret': process.env.DEVICE_SECRET ?? ""
+                },
+                body: JSON.stringify(payload),
+                signal: controller.signal
+            })
+
+            clearTimeout(timeoutId)
+
+            if (!response.ok)
+                throw new Error(`HTTP status ${response.status}`)
+
+            const resBody = await response.json().catch(() => ({}));
+            console.log('[BT-CODES] Push OK. ESP Response:', resBody);
+        } 
+        catch (err) {
+            const message = err instanceof Error && err.name === 'AbortError' 
+                ? 'Request timed out after 5000ms' 
+                : (err as Error).message
+
+            console.warn('[BT-CODES] ESP unreachable:', message)
         }
     }
 }
