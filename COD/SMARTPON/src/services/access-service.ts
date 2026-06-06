@@ -1,13 +1,15 @@
 import { Preferences } from '@capacitor/preferences'
 import { api } from './api'
 import type { AccessEvent } from '@data-types/access'
+import { authStore } from './auth-store.svelte'
 
 
 const STORAGE_KEY = 'offline_access_events'
-
+let lastEventId: number | null = null
 
 export class AccessService 
 {
+    
     /**
      * Handles a new access event. Tries to push it to the server, but if it failed it saves it locally to be sent later.
      * @param direction The direction the of the user, `in` for into the house, else `out`.
@@ -26,6 +28,11 @@ export class AccessService
 
             if (response.ok) 
             {
+                const data = await response.json()
+
+                lastEventId = data.id
+                await authStore.setIsHome(direction === 'in')
+
                 return
             }
         } 
@@ -38,6 +45,28 @@ export class AccessService
             key: STORAGE_KEY,
             value: JSON.stringify(events)
         })
+    }
+
+
+    async correctEvent(direction: 'in' | 'out'): Promise<void> 
+    {
+        if (!lastEventId) 
+        {
+            return
+        }
+
+        try {
+            await api.patch(`/events/access/${lastEventId}`, { direction })
+            
+            await authStore.setIsHome(direction === 'in')
+        } 
+        catch { }
+    }
+
+
+    async updateLastEventId(id: number|null)
+    {
+        lastEventId = id
     }
 
 

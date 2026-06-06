@@ -15,6 +15,9 @@ class AuthStore
     _bt_code_key = "bt_access_code"
     bt_code: string = $state("")
 
+    _is_home_key = "is_home"
+    is_home: boolean = $state(false)
+
     isAuthenticated: boolean = $derived(this.token !== "")
 
 
@@ -36,6 +39,10 @@ class AuthStore
             const saved_bt = await Preferences.get({ key: this._bt_code_key })
             if (saved_bt.value)
                 this.bt_code = saved_bt.value
+
+            const saved_is_home = await Preferences.get({ key: this._is_home_key })
+            if (saved_is_home.value)
+                this.is_home = saved_is_home.value === "true"
         } 
         catch (e) {
             console.error("Error while reading the session token:", e)
@@ -68,6 +75,12 @@ class AuthStore
         await Preferences.set({ key: this._bt_code_key, value: code })
     }
 
+    async setIsHome(is_home: boolean)
+    {
+        this.is_home = is_home
+        await Preferences.set({ key: this._is_home_key, value: is_home ? "true" : "false" })
+    }
+
 
     async logout() 
     {
@@ -77,6 +90,10 @@ class AuthStore
         await Preferences.remove({ key: this._server_url_key })
         this.bt_code = ""
         await Preferences.remove({ key: this._bt_code_key })
+        this.is_home = false
+        await Preferences.remove({ key: this._is_home_key })
+        this.is_admin = false
+        await Preferences.remove({ key: this._is_admin_key })
     }
 }
 

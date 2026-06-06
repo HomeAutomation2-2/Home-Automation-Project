@@ -151,6 +151,7 @@ export class LoginController
 
             const profileData = await response.json()
             userStore.setProfile(profileData)
+            authStore.is_home = profileData.is_home
 
             return true
         } 

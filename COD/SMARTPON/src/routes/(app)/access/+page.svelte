@@ -9,9 +9,13 @@
     import { Preferences } from "@capacitor/preferences";
     import { accessService } from "@services/access-service";
     import { authStore } from "@services/auth-store.svelte";
+    import { api } from "@services/api";
 
     
-    let has_server_connection = $state(false)
+    let loading = $state(true)
+    let loading_message = $state("Loading...")
+
+    let has_server_connection = $state(true)
     let has_EPS_connection = $state(false)
     let door_state = $state(0)
     let is_bluetooth_available = $state(true)
@@ -25,17 +29,55 @@
         return door_state !== 2
     })
 
+    let direction = $state(authStore.is_home ? 1 : 0) // 0 = coming, 1 = leaving
+    let direction_initialized = false
+    let location = $state(authStore.is_home ? 0 : 1) // 0 = away, 1 = home
+    let location_initialized = false
+    let skip_direction_effect = false
+    let skip_location_effect = false
 
-    /**
-     * Watch the state of the door button for changes.
-    */
     $effect( () => 
     {
-        if (door_state === 1 || door_state === 4) 
-        {
-            sendAccessRequest(door_state === 1 ? 'unlock' : 'lock')
+        direction
+        
+        if (!direction_initialized) 
+        { 
+            direction_initialized = true
+            return 
         }
+
+        if (skip_direction_effect)
+        { 
+            skip_direction_effect = false
+            return 
+        }
+
+        accessService.correctEvent(direction === 0 ? 'in' : 'out')
+        
+        skip_location_effect = true
+        location = direction === 0 ? 0 : 1
     })
+
+    $effect( () => 
+    {
+        location
+
+        if (!location_initialized) 
+        { 
+            location_initialized = true
+            return 
+        }
+
+        if (skip_location_effect)
+        { 
+            skip_location_effect = false
+            return 
+        }
+
+        api.patch('/users/me/location', { is_home: location === 0 })
+        authStore.setIsHome(location === 0)
+    })
+
 
 
     /**
@@ -53,8 +95,32 @@
             if (response.request_status === 'success') 
             {
                 door_state = response.door_status === 'unlocked' ? 2 : 0
-                await accessService.saveEvent(action === 'unlock' ? 'in' : 'out')
-            } 
+
+                if (action === 'unlock') 
+                {
+                    // what the user is about to do = inverse of current state
+                    const defaultDirection: 'in' | 'out' = authStore.is_home ? 'out' : 'in'
+                    
+                    skip_direction_effect = true
+                    direction = defaultDirection === 'in' ? 0 : 1
+
+                    console.log(`default direction: ${defaultDirection}`)
+                    console.log(`direction: ${direction}`)
+
+                    await accessService.saveEvent(defaultDirection)
+                    // authStore.is_home is now flipped by saveEvent
+                } 
+                else 
+                {
+                    const isHome = direction === 0
+                    
+                    skip_location_effect = true
+                    location = isHome ? 0 : 1
+
+                    authStore.setIsHome(isHome)
+                    accessService.updateLastEventId(null)
+                }
+            }
             else 
             {
                 door_state = 3
@@ -67,6 +133,18 @@
 
 
     /**
+     * Watch the state of the door button for changes.
+    */
+    $effect( () => 
+    {
+        if (door_state === 1 || door_state === 4) 
+        {
+            sendAccessRequest(door_state === 1 ? 'unlock' : 'lock')
+        }
+    })
+
+
+    /**
      * Try connecting to the ESP, first in silent mode then with a dialog.
      */
     async function tryConnect() 
@@ -76,6 +154,7 @@
         if (connected) 
         {
             has_EPS_connection = true
+            loading = false
             return
         }
 
@@ -95,6 +174,8 @@
         {
             has_EPS_connection = false
         }
+
+        loading = false
     }
 
 
@@ -104,10 +185,16 @@
     */
     onMount(async () => 
     {
+        loading_message = "Checking BT availability..."
         is_bluetooth_available = await bluetoothService.isAvailable()
+        
+        if (!is_bluetooth_available) 
+        {
+            loading = false;
+            return
+        }
 
-        if (!is_bluetooth_available) return
-
+        loading_message = "Connecting to lock..."
         await tryConnect()
         await accessService.syncPendingEvents()
 
@@ -145,8 +232,13 @@
 {/if}
 
 
-<div class="wrapper">    
-    {#if !has_EPS_connection}
+<div class="wrapper">
+    {#if loading}
+        <div class="while-loading">
+            <span>{loading_message}</span>
+            <div class="spinner"></div>
+        </div>
+    {:else if !has_EPS_connection}
         <div class="error-message">
             <span class="title">Door connection failed!</span>
             <div class="error-info">
@@ -167,9 +259,13 @@
         <div class="indicator-wrapper">
             <span>You are now:</span>
             {#if door_state !== 2}
-                <LocationSelector />
+                <LocationSelector 
+                    bind:location={location}
+                />
             {:else}
-                <AccesDirection />
+                <AccesDirection 
+                    bind:direction={direction} 
+                />
             {/if}
         </div>
     {:else}
@@ -240,5 +336,28 @@
         gap: 8px;
         text-align: center;
         color: var(--text-secondary);
+    }
+
+    .while-loading {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: large;
+
+        & .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--text-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 </style>
