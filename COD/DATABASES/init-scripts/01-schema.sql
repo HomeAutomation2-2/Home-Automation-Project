@@ -76,7 +76,9 @@ CREATE TABLE IF NOT EXISTS boiler_events (
 CREATE TABLE IF NOT EXISTS home_settings (
     id              SERIAL       PRIMARY KEY,
     hysteresis      DECIMAL(4,2) NOT NULL,
-    antifreeze_temp DECIMAL(4,2) NOT NULL
+    antifreeze_temp DECIMAL(4,2) NOT NULL,
+    sampling_period INT		 NOT NULL,
+    boiler_state    BOOLEAN      NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS devices (
