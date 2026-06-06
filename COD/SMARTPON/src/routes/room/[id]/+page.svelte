@@ -3,22 +3,15 @@
     import ErrorBanner from "@components/error-banner.svelte";
     import Pencil from "@components/icons/pencil.svelte";
     import InputNumber from "@components/input-number.svelte";
-    import InputText from "@components/input-text.svelte";
     import RoomTempCard from "@components/room-temp-card.svelte";
     import TempProgram from "@components/temp-program.svelte";
     import TopbarBack from "@components/topbar-back.svelte";
     import { RoomTempController } from "@controllers/room-temp-program.controller.svelte";
     import { userStore } from "@services/user-profile";
+    import { onMount } from "svelte";
 
     const controller = new RoomTempController()
     let offset = $state(controller.offset)
-    
-    $effect( () => {
-        const id = Number(page.params.id);
-        if (id) {
-            controller.loadData(id);
-        }
-    })
 
     let has_server_connection = $state(true)
 
@@ -39,6 +32,26 @@
         offset = controller.offset
         console.log(offset)
     }
+
+    onMount(() => 
+    {
+        const id = Number(page.params.id)
+        
+        if (id) 
+        {
+            controller.loadData(id);
+        }
+
+		const interval = setInterval( () => 
+        {
+			controller.loadData(id)
+		}, 30_000)
+
+		return () => 
+        {
+			clearInterval(interval);
+		}
+	})
 </script>
 
 
@@ -93,7 +106,7 @@
         </div>
     {:else}
         <RoomTempCard 
-            current_temp={controller.room?.current_temp}
+            current_temp={Number(controller.room?.current_temp ?? 0) + Number(controller.room?.offset_value ?? 0)}
             target_temp={controller.target_temp ?? 0.0}
             is_heating={controller.room?.is_heating}
         />

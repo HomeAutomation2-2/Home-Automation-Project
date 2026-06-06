@@ -45,7 +45,7 @@
 {/if}
 
 <div class="cards">
-    {#each dash_controller.rooms as room (room.id)}
+    {#each dash_controller.rooms_org as room (room.id)}
         <div class="location">
             <CategoryHeader 
                 name={room.name}

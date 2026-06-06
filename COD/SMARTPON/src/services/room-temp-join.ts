@@ -147,6 +147,7 @@ export function processRoomForDisplay(
 
     return {
         ...room,
+        current_temp: Number(room.current_temp) + Number(room.offset_value),
         target_temp: currentTemp ?? 0,
         next_temp: next?.temp ?? 0,
         next_temp_time: next?.day ? `${next.day} ${next.time}` : next?.time ?? "--:--",

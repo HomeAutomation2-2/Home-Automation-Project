@@ -19,7 +19,7 @@
 <div class="room-temp">
     <div class="temp">
         <span class="header">CURRENT</span>
-        <span>{current_temp}°C</span>
+        <span>{current_temp?.toFixed(1)}°C</span>
     </div>
     
     {#if is_heating}
@@ -34,7 +34,7 @@
 
         <div class="temp">
             <span class="header">TARGET</span>
-            <span>{target_temp}°C</span>
+            <span>{target_temp.toFixed(1)}°C</span>
         </div>
     {/if}
 </div>

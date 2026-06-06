@@ -16,7 +16,7 @@ describe('DashboardController', () =>
     {
         it('returnează numele camerei pentru un id valid', () => 
         {
-            controller.rooms = [
+            controller.rooms_org = [
                 { id: 1, name: 'Living', is_heating: false, offset_value: 1, current_temp: 1, temp_program_id: 1 }, 
                 { id: 2, name: 'Dormitor', is_heating: false, offset_value: 1, current_temp: 1, temp_program_id: 1 }
             ]
@@ -26,7 +26,7 @@ describe('DashboardController', () =>
 
         it('returnează undefined pentru un id inexistent', () => 
         {
-            controller.rooms = [{ id: 1, name: 'Living', is_heating: false, offset_value: 1, current_temp: 1, temp_program_id: 1 }]
+            controller.rooms_org = [{ id: 1, name: 'Living', is_heating: false, offset_value: 1, current_temp: 1, temp_program_id: 1 }]
 
             expect(controller.getRoomName(99)).toBeUndefined()
         })

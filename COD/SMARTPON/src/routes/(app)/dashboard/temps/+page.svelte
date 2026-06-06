@@ -3,12 +3,25 @@
     import FloatingActionButton from "@components/floating-action-button.svelte";
     import RoomStatusCard from "@components/room-status-card.svelte";
     import { DashboardController } from "@controllers/dashboard.controller.svelte";
-    import { getContext } from "svelte";
+    import { getContext, onMount } from "svelte";
 
     
     const dash_controller = getContext("dashboard-controller") as DashboardController
     
     let has_server_connection = $state(false)
+
+    onMount(() => 
+    {
+        const interval = setInterval( () => 
+        {
+			dash_controller.loadData()
+		}, 30_000)
+
+		return () => 
+        {
+			clearInterval(interval);
+		}
+	})
 </script>
 
 

@@ -9,11 +9,13 @@ import { processRoomForDisplay } from "@services/room-temp-join";
 
 export class DashboardController
 {
-    rooms = $state<Room[]>([])
+    rooms_org = $state<Room[]>([])
     zones = $state<LightZone[]>([])
     temp_programs = $state<TempProgram[]>([])
     room_error = $state("")
     zone_error = $state("")
+
+    rooms = $derived(this.rooms_org.toSorted( (a, b) => a.id - b.id ))
 
 
     /**
@@ -39,7 +41,7 @@ export class DashboardController
             if (!programs_response.ok) 
                 throw new Error("Failed to fetch temp program data")
 
-            this.rooms = await rooms_response.json()
+            this.rooms_org = await rooms_response.json()
             this.zones = await zones_response.json()
             this.temp_programs = await programs_response.json()
         } 
@@ -59,7 +61,7 @@ export class DashboardController
         if (!id) 
             return undefined
 
-        return this.rooms.find(it => it.id === id)?.name || undefined
+        return this.rooms_org.find(it => it.id === id)?.name || undefined
     }
 
 
@@ -170,7 +172,7 @@ export class DashboardController
     getRoomsForTempDisplay(): RoomForTempDisplay[]
     {
         
-        const result = this.rooms.map( (room) => {
+        const result = this.rooms_org.map( (room) => {
             const result = processRoomForDisplay(room, this.temp_programs) 
 
             if (!("target_temp" in result))
@@ -184,6 +186,7 @@ export class DashboardController
             
             return result
         })
+        .sort( (a, b) => a.id - b.id)
 
         return result
     }

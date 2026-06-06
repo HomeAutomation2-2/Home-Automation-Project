@@ -40,7 +40,7 @@
         <div class="temp-wrapper">
             <div class="temp">
                 <span class="header">CURRENT</span>
-                <span>{current_temp}°C</span>
+                <span>{current_temp.toFixed(1)}°C</span>
             </div>
 
             <div 
@@ -54,14 +54,14 @@
 
             <div class="temp">
                 <span class="header">TARGET</span>
-                <span>{target_temp}°C</span>
+                <span>{target_temp.toFixed(1)}°C</span>
             </div>
         </div>
 
         <div class="info">
             <span>{program}</span>
             <span>·</span>
-            <span>{next_temp}°C at {next_temp_time}</span>
+            <span>{next_temp.toFixed(1)}°C at {next_temp_time}</span>
         </div>
     {:else}
         <div class="info">
