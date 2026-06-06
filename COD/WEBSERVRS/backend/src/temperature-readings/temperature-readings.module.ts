@@ -11,4 +11,5 @@ import { TemperatureReading } from './entities/temperature-reading.entity';
   providers: [TemperatureReadingsService],
   exports: [TypeOrmModule]
 })
+
 export class TemperatureReadingsModule {}

@@ -90,6 +90,11 @@ export class DevicesService
             lights: lights.map(lz => ({
                 zone_id: lz.zone_id,
                 state: lz.state
+            })),
+            rooms: rooms.map(r => ({
+                id:          r.id,
+                target_temp: 0,
+                offset:      Number(r.offset_value),
             }))
         }  
     }
