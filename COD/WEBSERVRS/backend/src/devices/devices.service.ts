@@ -157,7 +157,8 @@ export class DevicesService
         const payload = {
             rooms: rooms.map(room => ({
                 id: room.id,
-                target_temp: this.resolveTargetTemp(room, room.tempProgram, settings?.antifreezeTemp || 0)
+                target_temp: this.resolveTargetTemp(room, room.tempProgram, settings?.antifreezeTemp || 0),
+                offset: Number(room.offset_value),
             }))
         }
 
@@ -279,8 +280,8 @@ export class DevicesService
         if (!activeSlot) return 0
 
         if (activeSlot.temp === 'off')        return 0
-        if (activeSlot.temp === 'antifreeze') return Number(antifreezeTemp) + Number(room.offset_value)
-        return Number(activeSlot.temp) + Number(room.offset_value)
+        if (activeSlot.temp === 'antifreeze') return Number(antifreezeTemp)
+        return Number(activeSlot.temp)
     }
 
 

@@ -9,6 +9,7 @@ import { UsersService } from '../users/users.service';
 import { SessionGuard } from '../users/guards/session.guard';
 import { UsersModule } from '../users/users.module';
 import { AuthSession } from '../auth-sessions/entities/auth-session.entity';
+import { User } from '../users/entities/user.entity';
 
 
 
@@ -19,6 +20,7 @@ import { AuthSession } from '../auth-sessions/entities/auth-session.entity';
       LightEvent,
       BoilerEvent,
       AuthSession,
+      User
     ]),
     UsersModule,
   ],

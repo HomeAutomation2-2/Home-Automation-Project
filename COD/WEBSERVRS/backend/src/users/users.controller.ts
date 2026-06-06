@@ -37,6 +37,15 @@ export class UsersController
         return safeUser;
     }
 
+    @Patch('me/location')
+    @UseGuards(SessionGuard)
+    async updateLocation(
+        @Body('is_home') isHome: boolean,
+        @GetUser() user: User,
+    ) {
+        await this.usersService.updateIsHome(user.id, isHome)
+    }
+
     
     /**
      * Get the info of all users on the server.

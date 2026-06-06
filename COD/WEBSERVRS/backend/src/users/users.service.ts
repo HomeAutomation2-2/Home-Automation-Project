@@ -73,6 +73,12 @@ export class UsersService
         return user_without_hash as UserResponse
     }
 
+    async updateIsHome(userId: number, isHome: boolean): Promise<void> 
+    {
+        await this.user_repository.update(userId, { isHome })
+        console.log(`[USER-LOCATION]: ${userId} is ${isHome ? "home" : "awaiy"}`)
+    }
+
 
     async getFormattedProfile(userId: number) 
     {
