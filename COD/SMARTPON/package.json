@@ -9,7 +9,8 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"build-apk": "pnpm run build && pnpm exec cap sync android && cd android && ./gradlew assembleDebug && cd .."
 	},
 	"devDependencies": {
 		"@capacitor/cli": "^8.3.4",

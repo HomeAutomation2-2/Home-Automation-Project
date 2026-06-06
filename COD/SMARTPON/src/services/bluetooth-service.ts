@@ -52,11 +52,21 @@ export class BluetoothService
      */
     async initialize(): Promise<void> 
     {
-        if (this.initialized) return
+        if (this.initialized) 
+            return
 
-        await BleClient.initialize({ androidNeverForLocation: true })
-        this.initialized = true
+        try {
+            await BleClient.initialize({ androidNeverForLocation: true })
+            await BleClient.requestEnable() 
+            await BleClient.requestDevice()
+            
+            this.initialized = true
+        } 
+        catch (error) {
+            console.error("BLE initialization failed", error)
+        }
     }
+
 
 
     /**
