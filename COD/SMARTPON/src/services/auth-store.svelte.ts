@@ -12,6 +12,9 @@ class AuthStore
     _is_admin_key = "is_user_admin"
     is_admin: boolean = false;
 
+    _bt_code_key = "bt_access_code"
+    bt_code: string = $state("")
+
     isAuthenticated: boolean = $derived(this.token !== "")
 
 
@@ -29,6 +32,10 @@ class AuthStore
             const saved_status = await Preferences.get({ key: this._is_admin_key })
             if (saved_status.value) 
                 this.is_admin = saved_status.value === "true"
+
+            const saved_bt = await Preferences.get({ key: this._bt_code_key })
+            if (saved_bt.value)
+                this.bt_code = saved_bt.value
         } 
         catch (e) {
             console.error("Error while reading the session token:", e)
@@ -55,6 +62,12 @@ class AuthStore
         await Preferences.set({ key: this._is_admin_key, value: is_admin ? "true" : "false" })
     }
 
+    async setBtCode(code: string)
+    {
+        this.bt_code = code
+        await Preferences.set({ key: this._bt_code_key, value: code })
+    }
+
 
     async logout() 
     {
@@ -62,6 +75,8 @@ class AuthStore
         await Preferences.remove({ key: this._token_key })
         this.server_url = ""
         await Preferences.remove({ key: this._server_url_key })
+        this.bt_code = ""
+        await Preferences.remove({ key: this._bt_code_key })
     }
 }
 

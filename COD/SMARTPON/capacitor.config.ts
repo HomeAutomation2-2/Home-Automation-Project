@@ -5,8 +5,10 @@ const config: CapacitorConfig = {
   appName: 'BlueLock',
   webDir: 'build',
   server: {
+    // only in dev mode
     url: "http://192.168.1.112:5173",
-    cleartext: true
+    cleartext: true,
+    androidScheme: "http"
   }
 };
 

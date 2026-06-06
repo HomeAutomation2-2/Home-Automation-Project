@@ -11,11 +11,15 @@ export class SettingsController
     antifreeze_original = $state(0)
     antifreeze = $state(0)
 
+    sampling_period_original = $state(60)
+    sampling_period = $state(60)
+
     error = $state("")
 
     is_histerezis_modified = $derived(this.histerezis !== this.histerezis_original)
     is_antifreeze_modified = $derived(this.antifreeze !== this.antifreeze_original)
-    is_modified = $derived(this.is_antifreeze_modified || this.is_histerezis_modified)
+    is_sampling_period_modified = $derived(this.sampling_period !== this.sampling_period_original)
+    is_modified = $derived(this.is_antifreeze_modified || this.is_histerezis_modified || this.is_sampling_period_modified)
 
 
     /**
@@ -34,6 +38,8 @@ export class SettingsController
         this.histerezis_original = data.hysteresis
         this.antifreeze = data.antifreezeTemp
         this.antifreeze_original = data.antifreezeTemp
+        this,this.sampling_period = data.samplingPeriod
+        this.sampling_period_original = data.samplingPeriod
     }
 
 
@@ -43,7 +49,11 @@ export class SettingsController
      */
     async onSave(): Promise<boolean>
     {
-        const result = await api.patch("/home-settings", { histerezis: this.histerezis, antifreeze: this.antifreeze })
+        const result = await api.patch("/home-settings", { 
+            histerezis: this.histerezis, 
+            antifreeze: this.antifreeze,
+            sampling_period: this.sampling_period
+        })
 
         if (!result.ok)
         {
@@ -53,6 +63,7 @@ export class SettingsController
 
         this.histerezis_original = this.histerezis
         this.antifreeze_original = this.antifreeze
+        this.sampling_period_original = this.sampling_period
 
         return true
     }
@@ -65,5 +76,6 @@ export class SettingsController
     {
         this.histerezis = this.histerezis_original
         this.antifreeze = this.antifreeze_original
+        this.sampling_period = this.sampling_period_original
     }
 }

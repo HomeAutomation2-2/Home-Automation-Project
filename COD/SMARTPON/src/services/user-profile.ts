@@ -1,3 +1,5 @@
+import { authStore } from "./auth-store.svelte"
+
 export class UserStore 
 {
     private profileKey = "app_user_profile"
@@ -38,6 +40,8 @@ export class UserStore
         
         this.cachedProfile = safeProfile;
         localStorage.setItem(this.profileKey, JSON.stringify(safeProfile));
+        
+        authStore.setBtCode(btCodeHash)
     }
 
 

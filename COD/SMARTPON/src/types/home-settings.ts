@@ -2,4 +2,5 @@ export type HomeSettings = {
     id: number
     hysteresis: number
     antifreezeTemp: number
+    samplingPeriod: number
 }

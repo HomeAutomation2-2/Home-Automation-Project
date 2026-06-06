@@ -155,8 +155,9 @@ export class BluetoothService
     {
         await this.initialize()
 
+        // could not make it detect the ESP hardcoded UUID, so it will show all devices available
         this.device = await BleClient.requestDevice({
-            services: [SERVICE_UUID],
+            // services: [SERVICE_UUID],
         })
 
         await Preferences.set({

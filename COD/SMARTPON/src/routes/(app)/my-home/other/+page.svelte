@@ -21,6 +21,11 @@
             type="number"
             bind:value={controller.antifreeze}
         />
+        <InputNumber
+            label="Sampling period"
+            type="number"
+            bind:value={controller.sampling_period}
+        />
         <span class="error">{controller.error}</span>
     </div>
 

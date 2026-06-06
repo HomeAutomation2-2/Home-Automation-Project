@@ -8,6 +8,7 @@
     import { bluetoothService } from "@services/bluetooth-service";
     import { Preferences } from "@capacitor/preferences";
     import { accessService } from "@services/access-service";
+    import { authStore } from "@services/auth-store.svelte";
 
     
     let has_server_connection = $state(false)
@@ -45,7 +46,7 @@
     {
         try {
             const response = await bluetoothService.sendAccessRequest({
-                code: 'placeholder_code',
+                code: authStore.bt_code,
                 action
             })
 

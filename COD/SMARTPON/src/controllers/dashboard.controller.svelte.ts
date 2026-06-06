@@ -1,6 +1,7 @@
 import type { LightZone } from "@data-types/light-zone";
 import type { Room, RoomForTempDisplay } from "@data-types/room";
 import type { TempProgram } from "@data-types/temp-program";
+import { api } from "@services/api";
 import { authStore } from "@services/auth-store.svelte";
 import { processRoomForDisplay } from "@services/room-temp-join";
 
@@ -77,18 +78,19 @@ export class DashboardController
         zone.is_on = !currentStatus
 
         try {
-            const response = await fetch(`${authStore.server_url}/light-zones/${zoneId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ is_on: zone.is_on })
-            })
+            const response = await api.patch(`/light-zones/${zoneId}`, { is_on: zone.is_on })
 
             if (!response.ok) 
-                throw new Error()
+            {
+                const errorData = await response.json().catch(() => ({}))
+                const errorMessage = errorData.message || `Status ${response.status}`
+
+                throw new Error(errorMessage)
+            }
         } 
         catch (err) {
             zone.is_on = old_status
-            alert("Could not change light state because of a server error")
+            alert(`Could not change light state because of a server error:\n\n${err}`)
         }
     }
 
