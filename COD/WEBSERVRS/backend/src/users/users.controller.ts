@@ -32,7 +32,7 @@ export class UsersController
     @UseGuards(SessionGuard)
     getMe(@GetUser() user: User) 
     {
-        const { passwordHash, sessions, btCodeHash, ...safeUser } = user;
+        const { passwordHash, sessions, ...safeUser } = user;
         
         return safeUser;
     }
