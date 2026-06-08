@@ -45,4 +45,10 @@ export class LightZonesController
     {
         return this.lightZonesService.createZone(create_zone_request)
     }
+
+    @Post('toggle')
+    async toggle(@Body('zone_id') zoneId: number) 
+    {
+        await this.lightZonesService.toggleZone(zoneId)
+    }
 }
