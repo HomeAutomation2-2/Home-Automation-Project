@@ -8,7 +8,7 @@
     
     const dash_controller = getContext("dashboard-controller") as DashboardController
     
-    let has_server_connection = $state(false)
+    let has_server_connection = $state(true)
 
     onMount(() => 
     {

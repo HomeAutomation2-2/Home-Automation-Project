@@ -19,7 +19,7 @@
 
     const dash_controller = getContext("dashboard-controller") as DashboardController
     
-    let has_server_connection = $state(false)
+    let has_server_connection = $state(true)
     let new_zone_parent_id = $state<number|undefined>(undefined)
     let new_zone_name = $state("")
 
