@@ -33,6 +33,19 @@
             new_zone_name = ""   
         }
     }
+
+    onMount(() => 
+    {
+        const interval = setInterval( () => 
+        {
+			dash_controller.loadData()
+		}, 30_000)
+
+		return () => 
+        {
+			clearInterval(interval);
+		}
+	})
 </script>
 
 
