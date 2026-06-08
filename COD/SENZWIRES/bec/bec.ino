@@ -1,65 +1,96 @@
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266mDNS.h>
 #include <ArduinoJson.h>
 
-#define LED_PIN 3
-ESP8266WebServer server(80);
-// const char *ssid = "Orange-H7XZR3-2G";
-// const char *password = "QTfDNCdtskZh4Z5PKZ";
-// const char* serverUrl = "http://192.168.1.93/api";
 
-const char *ssid = "Serban Iphone";
-const char *password = "Penispenis";
+#define LED_PIN 0
 
-IPAddress local_IP(192, 168, 1, 90);   
-IPAddress gateway(192, 168, 1, 1);    
-IPAddress subnet(255, 255, 255, 0);
 
-void handleControl() {
-  if (!server.hasArg("plain")) {
-    server.send(400, "text/plain", "No Body");
-    return;
-  }
+const char *ssid = "NothingHere";
+const char *password = "8689013472";
 
-  StaticJsonDocument<200> doc;
-  deserializeJson(doc, server.arg("plain"));
-  String state;
-  if (doc["cmd"] == "set_gpio") {
-    String val = doc["val"];
+
+unsigned long lastPollTime = 0;
+const unsigned long pollInterval = 2000; // Poll state every 2 seconds
+bool currentLedState = false;
+
+
+
+/*
+    Log a message the the ESP32.
+*/
+void logToESP32(String message) 
+{
+    WiFiClient client;
+    HTTPClient http;
+    http.begin(client, "http://smartlock.local/node/log");
+    http.addHeader("Content-Type", "application/json");
+
+    JsonDocument doc;
+    doc["device"] = "BUTTON_ESP01";
+    doc["msg"] = message;
+
+    String body;
+    serializeJson(doc, body);
+    http.POST(body);
+    http.end();
+}
+
+
+
+void setup() 
+{
+    Serial.begin(115200);
+    pinMode(LED_PIN, OUTPUT);
     
-    if (val == "HIGH"){
-      digitalWrite(LED_PIN, HIGH);
-    }else{ 
-      digitalWrite(LED_PIN, LOW);}
+    WiFi.begin(ssid, password);
+    
+    while (WiFi.status() != WL_CONNECTED) 
+        delay(500);
 
-    // server.send(200, "application/json", "{\"status\":\"executed\"}");
-    String jsonResponse = "{\"status\":\"ok\", \"valoare_Led\":" + val + "}";
-    server.send(200, "application/json", jsonResponse);
-  }
+    MDNS.begin("esp01_led");
+
+    logToESP32("Led unit booted and connected via DNS Discovery mode.");
 }
 
-void setup() {
-  Serial.begin(115200);
-  pinMode(LED_PIN, OUTPUT);
-  
-  // if (!WiFi.config(local_IP, gateway, subnet)) {
-  //   Serial.println("STA Failed to configure Static IP");
-  // }
 
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
 
-  Serial.println("\nWiFi connected.");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP()); 
+void loop() 
+{
+    MDNS.update();
+    unsigned long now = millis();
 
-  server.on("/control", HTTP_POST, handleControl);
-  server.begin();
-}
+    if (now - lastPollTime >= pollInterval) 
+    {
+        lastPollTime = now;
 
-void loop() {
-  server.handleClient(); // Always listening for the ESP32
+        if (WiFi.status() == WL_CONNECTED) 
+        {
+            WiFiClient client;
+            HTTPClient http;
+            
+            http.begin(client, "http://smartlock.local/node/outbound");
+            int httpCode = http.GET();
+            
+            if (httpCode == 200) 
+            {
+                JsonDocument doc;
+                if (!deserializeJson(doc, http.getString())) 
+                {
+
+                    bool targetState = doc["light_zone1"];
+
+                    if (targetState != currentLedState) 
+                    {
+                        currentLedState = targetState;
+                        digitalWrite(LED_PIN, targetState ? HIGH : LOW);
+
+                        String logMsg = "Set LED to: " + String(currentLedState ? "ON" : "OFF");
+                    }
+                }
+            }
+            http.end();
+        }
+    }
 }

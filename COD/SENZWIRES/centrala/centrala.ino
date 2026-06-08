@@ -1,71 +1,110 @@
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266mDNS.h>
 #include <ArduinoJson.h>
 
-const char *ssid = "Orange-H7XZR3-2G";
-const char *password = "QTfDNCdtskZh4Z5PKZ";
 
-// IP Static pentru acest ESP01 (Calorifer)
-IPAddress local_IP(192, 168, 1, 91);
-IPAddress gateway(192, 168, 1, 1);
-IPAddress subnet(255, 255, 255, 0);
+#define RELAY_PIN 0
 
-#define RELAY_PIN 2 // GPIO2 pe ESP01
 
-ESP8266WebServer server(80);
+const char *ssid = "NothingHere";
+const char *password = "8689013472";
 
-void handleControl() {
-  if (!server.hasArg("plain")) {
-    server.send(400, "text/plain", "No Data");
-    return;
-  }
 
-  StaticJsonDocument<200> doc;
-  DeserializationError error = deserializeJson(doc, server.arg("plain"));
-  
-  if (error) {
-    server.send(400, "application/json", "{\"status\":\"error\"}");
-    return;
-  }
+unsigned long lastPollTime = 0;
+const unsigned long pollInterval = 2000; 
 
-  String cmd = doc["cmd"];
-  String val = doc["val"];
 
-  if (cmd == "set_gpio") {
-    if (val == "HIGH") {
-      digitalWrite(RELAY_PIN, HIGH);
-      Serial.println("Centrala PORNITA");
-    } else if (val == "LOW") {
-      digitalWrite(RELAY_PIN, LOW);
-      Serial.println("Centrala OPRITA");
+
+/*
+    Log a message the the ESP32.
+*/
+void logToESP32(String message) 
+{
+    WiFiClient client;
+    HTTPClient http;
+    http.begin(client, "http://smartlock.local/node/log");
+    http.addHeader("Content-Type", "application/json");
+
+    JsonDocument doc;
+    doc["device"] = "BOILER";
+    doc["msg"] = message;
+
+    String body;
+    serializeJson(doc, body);
+
+    http.POST(body);
+    http.end();
+}
+
+
+
+void setup() 
+{
+    pinMode(RELAY_PIN, OUTPUT);
+    digitalWrite(RELAY_PIN, LOW);
+    
+    WiFi.begin(ssid, password);
+
+    while (WiFi.status() != WL_CONNECTED) 
+        delay(500);
+
+    MDNS.begin("esp01_boiler");
+
+    logToESP32("Boiler unit booted and connected via DNS Discovery mode.");
+}
+
+
+
+
+void loop() 
+{
+    MDNS.update();
+    unsigned long now = millis();
+
+    if (now - lastPollTime >= pollInterval) 
+    {
+        lastPollTime = now;
+
+        if (WiFi.status() != WL_CONNECTED) 
+        {
+            return;
+        }
+
+        WiFiClient client;
+        HTTPClient http;
+        
+        http.begin(client, "http://smartlock.local/node/outbound");
+        int httpCode = http.GET();
+        
+        if (httpCode == 200) 
+        {
+            JsonDocument doc;
+            DeserializationError error = deserializeJson(doc, http.getString());
+            
+            if (!error) 
+            {
+                bool boilerOn = doc["boiler"];
+                bool currentPinState = digitalRead(RELAY_PIN);
+                
+                digitalWrite(RELAY_PIN, boilerOn ? HIGH : LOW);
+                
+                if (boilerOn != currentPinState) 
+                {
+                    String stateStr = boilerOn ? "STARTED (ON)" : "STOPPED (OFF)";
+                    logToESP32("State structural change! Boiler pin is now " + stateStr);
+                }
+            } 
+            else 
+            {
+                logToESP32("Error: Failed to parse JSON configuration from ESP32.");
+            }
+        } 
+        else 
+        {
+            logToESP32("HTTP Poll Failed! Error code: " + String(httpCode));
+        }
+
+        http.end();
     }
-  }
-
-  server.send(200, "application/json", "{\"status\":\"ok\"}");
-}
-
-void setup() {
-  Serial.begin(115200);
-  pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, LOW); // Oprit initial
-
-  if (!WiFi.config(local_IP, gateway, subnet)) {
-    Serial.println("Static IP Failed");
-  }
-
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("\nWiFi Connected! IP: ");
-  Serial.println(WiFi.localIP());
-
-  server.on("/control", HTTP_POST, handleControl);
-  server.begin();
-}
-
-void loop() {
-  server.handleClient();
 }
