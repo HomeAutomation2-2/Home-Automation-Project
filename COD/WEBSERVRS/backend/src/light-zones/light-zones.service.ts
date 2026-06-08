@@ -121,4 +121,26 @@ export class LightZonesService
 
         return saved
     }
+
+
+    async toggleZone(zoneId: number): Promise<void> 
+    {
+        const zone = await this.zone_repository.findOne({ where: { id: zoneId } })
+
+        if (!zone)
+            throw new NotFoundException('Zone not found')
+
+        console.log(`[ESP-LIGHT-ZONE] light physically toggled`)
+
+        zone.is_on = !zone.is_on
+        zone.last_changed_at = new Date()
+        await this.zone_repository.save(zone)
+
+        await this.light_event_repository.save({
+            zoneId: zoneId,
+            userId: null,
+            newState: zone.is_on
+        })
+    }
 }
+

@@ -51,8 +51,13 @@ export class DevicesService
      */
     async register(dto: RegisterDeviceDto): Promise<any> 
     {
+        console.log(`secret: ${process.env.DEVICE_SECRET}`)
+
         if (dto.secret !== process.env.DEVICE_SECRET) 
+        {
+            console.log("[REGISTER-DEVICE] secret invalid!")
             throw new UnauthorizedException('Secret invalid')
+        }
 
         const device = this.devicesRepository.create({ ip: dto.ip })
         await this.devicesRepository.save(device)
@@ -81,6 +86,8 @@ export class DevicesService
             const zone = room.lightZones.sort((a, b) => a.id - b.id)[0]
             return { zone_id: zone.id, state: zone.is_on }
         })
+
+        console.log(`[REGISTER-DEVICE] device registered on ${dto.ip}`)
 
         return {
             status: 'ok',
