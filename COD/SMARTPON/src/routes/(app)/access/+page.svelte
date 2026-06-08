@@ -87,6 +87,8 @@
     async function sendAccessRequest(action: 'lock' | 'unlock') 
     {
         try {
+            console.log(`trying to trigger door ${action} with token ${authStore.bt_code}`)
+            
             const response = await bluetoothService.sendAccessRequest({
                 code: authStore.bt_code,
                 action

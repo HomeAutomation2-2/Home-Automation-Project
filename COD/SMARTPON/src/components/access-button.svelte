@@ -122,6 +122,7 @@
             var(--19-21-secondary) var(--progress), 
             transparent var(--progress));
         transition: --progress 1s linear;
+        user-select: none;
 
         /* trigger the animation by setting the variable */
         &:not(.unlocked):not(.awaiting-confirmation):not(.errored):has(button:active) {

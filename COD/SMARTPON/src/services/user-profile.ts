@@ -41,6 +41,8 @@ export class UserStore
         this.cachedProfile = safeProfile;
         localStorage.setItem(this.profileKey, JSON.stringify(safeProfile));
         
+        console.log(user)
+
         authStore.setBtCode(btCodeHash)
     }
 

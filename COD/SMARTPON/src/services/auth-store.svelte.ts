@@ -71,6 +71,8 @@ class AuthStore
 
     async setBtCode(code: string)
     {
+        console.log(`[AUTH STORE] set BT code: ${code}`)
+        
         this.bt_code = code
         await Preferences.set({ key: this._bt_code_key, value: code })
     }
