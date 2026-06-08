@@ -6,8 +6,8 @@
 #include "wifi_client.h"
 #include "esp_server.h"
 #include "ble.h"
+#include <ESPmDNS.h>
 
-// ─── Shared state definitions ─────────────────────────────────────────────────
 Room   rooms[ROOM_COUNT];
 String allowedHashes[MAX_USERS];
 int    totalUsers     = 0;
@@ -32,6 +32,12 @@ void setup() {
     initSensors();
 
     connectWiFiAndRegister();
+    
+    // Start mDNS responder for auto-discovery
+    if (MDNS.begin("smartlock")) {
+        Serial.println("[mDNS] Responder started. Hostname: http://smartlock.local");
+    }
+
     readSensors();
     sendSensorData();
     setupEspServer();
@@ -45,7 +51,6 @@ void loop() {
     unsigned long now = millis();
     if (now - lastSensorPush >= (unsigned long)samplingPeriod * 1000) {
         lastSensorPush = now;
-        readSensors();
         updateHeating();
         sendSensorData();
     }
