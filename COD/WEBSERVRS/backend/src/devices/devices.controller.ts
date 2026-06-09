@@ -13,6 +13,7 @@ export class DevicesController
 
 
     @Post('register')
+    @UseGuards(DeviceSecretGuard)
     register(@Body() dto: RegisterDeviceDto) 
     {
         console.log(`device registration request: ${dto.ip}`)

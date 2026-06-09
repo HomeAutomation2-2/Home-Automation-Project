@@ -12,6 +12,7 @@ export class RoomsController
 
 
     @Post()
+    @UseGuards(SessionGuard)
     create(@Body() room_request: CreateRoomDto) 
     {
         return this.roomsService.createRoom(room_request)
@@ -19,6 +20,7 @@ export class RoomsController
 
 
     @Get()
+    @UseGuards(SessionGuard)
     findAll() 
     {
         return this.roomsService.findAll()
@@ -26,6 +28,7 @@ export class RoomsController
 
 
     @Get(':id')
+    @UseGuards(SessionGuard)
     findOne(@Param('id', ParseIntPipe) id: number) 
     {
         return this.roomsService.getRoom(id)
@@ -34,6 +37,7 @@ export class RoomsController
 
     /* Update the room temp program ID */
     @Patch(":id/temp-program")
+    @UseGuards(SessionGuard)
     setTempProgramId(
         @Param("id", ParseIntPipe) id: number,
         @Body("temp_program_id") program_id: number | null, 

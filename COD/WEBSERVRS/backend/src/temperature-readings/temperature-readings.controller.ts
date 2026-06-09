@@ -1,5 +1,6 @@
-import { Controller, Get, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { TemperatureReadingsService } from './temperature-readings.service';
+import { SessionGuard } from '../users/guards/session.guard';
 
 
 
@@ -12,6 +13,7 @@ export class TemperatureReadingsController
 
 
     @Get()
+    @UseGuards(SessionGuard)
     async getReadings(@Query('room_id', ParseIntPipe) roomId: number) 
     {
         return this.temperatureReadingsService.getReadings(roomId);

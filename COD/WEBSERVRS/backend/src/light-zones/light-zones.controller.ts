@@ -17,6 +17,7 @@ export class LightZonesController
 
 
     @Get(":id")
+    @UseGuards(SessionGuard)
     getZone(@Param() zone_request: GetLightZoneRequestDto)
     {
         return this.lightZonesService.getZone(zone_request)
@@ -24,6 +25,7 @@ export class LightZonesController
 
 
     @Get()
+    @UseGuards(SessionGuard)
     getZones(@Query() zones_request: GetLightZonesRequestDto)
     {
         return this.lightZonesService.getZones(zones_request)
@@ -41,12 +43,14 @@ export class LightZonesController
     }
 
     @Post()
+    @UseGuards(SessionGuard)
     createZone(@Body() create_zone_request: CreateLightZoneDto)
     {
         return this.lightZonesService.createZone(create_zone_request)
     }
 
     @Post('toggle')
+    @UseGuards(SessionGuard)
     async toggle(@Body('zone_id') zoneId: number) 
     {
         await this.lightZonesService.toggleZone(zoneId)

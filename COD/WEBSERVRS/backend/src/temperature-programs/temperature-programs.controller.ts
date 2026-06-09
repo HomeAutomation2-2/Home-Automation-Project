@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { TemperatureProgramsService } from './temperature-programs.service';
 import { CreateTemperatureProgramDto } from './dto/create-program.dto';
+import { SessionGuard } from '../users/guards/session.guard';
 
 
 
@@ -12,6 +13,7 @@ export class TemperatureProgramsController
 
 
     @Get()
+    @UseGuards(SessionGuard)
     getAllPrograms() 
     {
         return this.programsService.findAll();
@@ -19,6 +21,7 @@ export class TemperatureProgramsController
 
 
     @Post()
+    @UseGuards(SessionGuard)
     createProgram(@Body() createDto: CreateTemperatureProgramDto) 
     {
         return this.programsService.create(createDto);
@@ -26,6 +29,7 @@ export class TemperatureProgramsController
 
 
     @Delete(':id')
+    @UseGuards(SessionGuard)
     deleteProgram(@Param('id', ParseIntPipe) id: number) 
     {
         return this.programsService.remove(id);

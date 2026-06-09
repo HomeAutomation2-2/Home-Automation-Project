@@ -20,6 +20,7 @@ export class UsersController
 
 
     @Post("register")
+    @UseGuards(SessionGuard)
     async registre(@Body() user_data: CreateUserDto)
     {
         this.logger.log(`Regiester request for user: ${user_data}`)
