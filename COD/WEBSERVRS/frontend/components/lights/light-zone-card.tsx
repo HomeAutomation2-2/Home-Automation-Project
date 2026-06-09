@@ -1,5 +1,8 @@
+"use client";
+
 import { FIGMA_LIGHTS } from "@/components/lights/figma-lights-assets";
 import { LightZoneToggle } from "@/components/lights/light-zone-toggle";
+import { useLiveClock } from "@/hooks/useLiveClock";
 import { formatLastChanged } from "@/lib/lights/format-last-changed";
 import type { LightZoneForDisplay } from "@/lib/lights/join-light-zones";
 
@@ -11,11 +14,12 @@ type LightZoneCardProps = {
 };
 
 export function LightZoneCard({ zone, busy, error, onToggle }: LightZoneCardProps) {
-  const lastChanged = formatLastChanged(zone.last_changed_at);
+  const now = useLiveClock(30_000);
+  const lastChanged = formatLastChanged(zone.last_changed_at, now);
 
   return (
     <article
-      className={`relative flex flex-col gap-4 overflow-hidden rounded border bg-white p-[17px] shadow-[0px_2px_4px_-1px_rgba(0,0,0,0.02)] ${
+      className={`relative flex min-h-[189px] flex-col gap-4 overflow-hidden rounded border bg-white p-[17px] shadow-[0px_2px_4px_-1px_rgba(0,0,0,0.02)] ${
         error ? "border-[#b42318]" : "border-[#c3c6d7]"
       }`}
     >
@@ -41,21 +45,13 @@ export function LightZoneCard({ zone, busy, error, onToggle }: LightZoneCardProp
       <div className="flex flex-col gap-1">
         <h3 className="text-lg font-semibold text-[#191b23]">{zone.name}</h3>
         <p className="text-xs text-[#555f6d]">{zone.room_name}</p>
-        <div className="flex items-center gap-1">
-          <span
-            className={`size-2 rounded-full ${
-              zone.is_on ? "bg-[#004ac6]" : "bg-[#9ca3af]"
-            }`}
-            aria-hidden
-          />
-          <span
-            className={`text-xs font-semibold uppercase tracking-[0.6px] ${
-              zone.is_on ? "text-[#004ac6]" : "text-[#555f6d]"
-            }`}
-          >
-            {zone.is_on ? "Aprins" : "Stins"}
-          </span>
-        </div>
+        <p
+          className={`text-xs font-semibold uppercase tracking-[0.6px] ${
+            zone.is_on ? "text-[#004ac6]" : "text-[#555f6d]"
+          }`}
+        >
+          {zone.is_on ? "Activ • 100%" : "Inactiv • 0%"}
+        </p>
         {error && (
           <p className="text-xs text-[#b42318]" role="alert">
             {error}

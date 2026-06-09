@@ -2,12 +2,24 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { FIGMA_HEATING } from "@/components/heating/figma-heating-assets";
+import { HeatingFormRow } from "@/components/heating/heating-form-row";
+import { HeatingSubNav } from "@/components/heating/heating-subnav";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { getProgramName } from "@/lib/heating/room-temp-join";
 import { getApiClient } from "@/lib/auth";
 import { ApiError } from "@/lib/types/api";
 import type { Room } from "@/lib/types/room";
 import type { TempProgram } from "@/lib/types/temp-program";
+
+const SAMPLING_OPTIONS = [
+  { label: "1 minut", value: 1 },
+  { label: "5 minute", value: 5 },
+  { label: "10 minute", value: 10 },
+  { label: "15 minute", value: 15 },
+  { label: "30 minute", value: 30 },
+  { label: "60 minute", value: 60 },
+];
 
 type HeatingParamsContentProps = {
   roomId: number;
@@ -17,7 +29,7 @@ export function HeatingParamsContent({ roomId }: HeatingParamsContentProps) {
   const [room, setRoom] = useState<Room | null>(null);
   const [programs, setPrograms] = useState<TempProgram[]>([]);
   const [offset, setOffset] = useState("");
-  const [samplingMinutes, setSamplingMinutes] = useState("5");
+  const [samplingMinutes, setSamplingMinutes] = useState(5);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +48,7 @@ export function HeatingParamsContent({ roomId }: HeatingParamsContentProps) {
       setRoom(roomData);
       setPrograms(programsData);
       setOffset(String(Number(roomData.offset_value)));
-      setSamplingMinutes(String(roomData.sampling_minutes ?? 5));
+      setSamplingMinutes(roomData.sampling_minutes ?? 5);
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "Nu s-au putut încărca setările camerei.",
@@ -58,20 +70,11 @@ export function HeatingParamsContent({ roomId }: HeatingParamsContentProps) {
     return null;
   }
 
-  function validateSampling(value: string): string | null {
-    const n = Number(value);
-    if (Number.isNaN(n) || n < 1 || n > 60) {
-      return "Intervalul trebuie să fie între 1 și 60 minute.";
-    }
-    return null;
-  }
-
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const offErr = validateOffset(offset);
-    const sampErr = validateSampling(samplingMinutes);
     setOffsetError(offErr);
-    if (offErr || sampErr) return;
+    if (offErr) return;
 
     setSaving(true);
     setSuccess(null);
@@ -79,7 +82,7 @@ export function HeatingParamsContent({ roomId }: HeatingParamsContentProps) {
     try {
       const updated = await getApiClient().updateRoom(roomId, {
         offset_value: Number(offset),
-        sampling_minutes: Number(samplingMinutes),
+        sampling_minutes: samplingMinutes,
       });
       setRoom(updated);
       setSuccess("Setările au fost salvate.");
@@ -93,103 +96,111 @@ export function HeatingParamsContent({ roomId }: HeatingParamsContentProps) {
   const programName = room ? getProgramName(programs, room.temp_program_id) : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-[720px] flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-[896px] flex-col gap-6">
+      <HeatingSubNav />
+
       <div>
         <Link href="/heating" className="text-sm text-[#004ac6] hover:underline">
-          ← Înapoi la încălzire
+          ← Înapoi
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold text-[#191b23]">
-          {room?.name ?? "Setări cameră"}
+        <h1 className="mt-2 text-[30px] font-semibold leading-[38px] tracking-[-0.6px] text-[#191b23]">
+          {room?.name ?? "Parametri cameră"}
         </h1>
-        <p className="mt-1 text-sm text-[#555f6d]">
-          Calibrare temperatură și interval de măsurare pentru această cameră.
-        </p>
       </div>
 
       {error && <ErrorBanner message={error} />}
       {success && (
-        <p className="rounded-lg border border-[#c3c6d7] bg-[#faf8ff] px-4 py-3 text-sm text-[#191b23]">
+        <p className="rounded border border-[#c3c6d7] bg-[#faf8ff] px-4 py-3 text-sm text-[#191b23]">
           {success}
         </p>
       )}
 
       {loading && (
-        <div className="h-64 animate-pulse rounded-lg bg-[#e8e9f0]" aria-hidden />
+        <div className="h-64 animate-pulse rounded border border-[#c3c6d7] bg-white" />
       )}
 
       {!loading && room && (
-        <form
-          onSubmit={(e) => void handleSubmit(e)}
-          className="flex flex-col gap-5 rounded-lg border border-[#c3c6d7] bg-white p-[17px]"
-        >
-          <div className="grid grid-cols-2 gap-4 rounded-lg border border-[#c3c6d7] bg-[#faf8ff] p-4 text-sm">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.6px] text-[#555f6d]">
-                Temperatură curentă
-              </p>
-              <p className="text-lg font-semibold text-[#191b23]">
-                {Number(room.current_temp).toFixed(1)}°C
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.6px] text-[#555f6d]">
-                Încălzire
-              </p>
-              <p className="text-lg font-semibold text-[#191b23]">
-                {room.is_heating ? "Pornită" : "Oprită"}
-              </p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-xs font-bold uppercase tracking-[0.6px] text-[#555f6d]">
-                Program activ
-              </p>
-              <p className="text-lg font-semibold text-[#191b23]">
-                {programName ?? "Niciunul"}
-              </p>
-            </div>
+        <div className="overflow-hidden rounded border border-[#c3c6d7] bg-white shadow-[0px_1px_1px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center gap-2 border-b border-[#c3c6d7] bg-[#faf8ff] px-4 py-4">
+            <img
+              alt=""
+              src={FIGMA_HEATING.paramsSettingsIcon}
+              className="size-[18px] max-w-none"
+            />
+            <h2 className="text-lg font-semibold text-[#191b23]">Setări tehnice</h2>
           </div>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-bold uppercase tracking-[0.6px] text-[#555f6d]">
-              Offset temperatură (°C)
-            </span>
-            <input
-              type="number"
-              step="0.1"
-              value={offset}
-              onChange={(e) => {
-                setOffset(e.target.value);
-                setOffsetError(null);
-              }}
-              className="rounded border border-[#c3c6d7] bg-[#faf8ff] px-3 py-2 text-sm text-[#191b23] outline-none focus:border-[#004ac6]"
-            />
-            {offsetError && (
-              <span className="text-xs text-[#b42318]">{offsetError}</span>
-            )}
-          </label>
+          <form onSubmit={(e) => void handleSubmit(e)} className="p-4">
+            <HeatingFormRow label="Cameră">
+              <p className="text-sm font-medium text-[#191b23]">{room.name}</p>
+            </HeatingFormRow>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-bold uppercase tracking-[0.6px] text-[#555f6d]">
-              Interval măsurare (minute)
-            </span>
-            <input
-              type="number"
-              min={1}
-              max={60}
-              value={samplingMinutes}
-              onChange={(e) => setSamplingMinutes(e.target.value)}
-              className="rounded border border-[#c3c6d7] bg-[#faf8ff] px-3 py-2 text-sm text-[#191b23] outline-none focus:border-[#004ac6]"
-            />
-          </label>
+            <HeatingFormRow label="Temperatură curentă">
+              <p className="text-sm text-[#191b23]">
+                {Number(room.current_temp).toFixed(1)} °C
+              </p>
+            </HeatingFormRow>
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-fit rounded bg-[#004ac6] px-4 py-2 text-sm text-white disabled:opacity-50"
-          >
-            {saving ? "Se salvează…" : "Salvează"}
-          </button>
-        </form>
+            <HeatingFormRow label="Program activ">
+              <p className="text-sm text-[#191b23]">{programName ?? "Niciunul"}</p>
+            </HeatingFormRow>
+
+            <HeatingFormRow label="Stare încălzire">
+              <p className="text-sm text-[#191b23]">
+                {room.is_heating ? "Pornită" : "Oprită"}
+              </p>
+            </HeatingFormRow>
+
+            <HeatingFormRow label="Offset senzor (°C)">
+              <div>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={offset}
+                  onChange={(e) => {
+                    setOffset(e.target.value);
+                    setOffsetError(null);
+                  }}
+                  className="w-full max-w-xs rounded border border-[#c3c6d7] bg-white px-3 py-2 text-sm outline-none focus:border-[#004ac6] md:w-[284px]"
+                />
+                {offsetError && (
+                  <p className="mt-1 text-xs text-[#b42318]">{offsetError}</p>
+                )}
+              </div>
+            </HeatingFormRow>
+
+            <HeatingFormRow label="Interval măsurare">
+              <select
+                value={samplingMinutes}
+                onChange={(e) => setSamplingMinutes(Number(e.target.value))}
+                className="w-full max-w-xs rounded border border-[#c3c6d7] bg-white px-3 py-2 text-sm md:w-[284px]"
+              >
+                {SAMPLING_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </HeatingFormRow>
+
+            <div className="mt-6 flex justify-end gap-2 border-t border-[#c3c6d7] pt-4">
+              <Link
+                href="/heating"
+                className="rounded border border-[#c3c6d7] bg-white px-4 py-2 text-sm text-[#191b23]"
+              >
+                Anulează
+              </Link>
+              <button
+                type="submit"
+                disabled={saving}
+                className="inline-flex items-center gap-1 rounded bg-[#004ac6] px-4 py-2 text-sm text-white disabled:opacity-50"
+              >
+                <img alt="" src={FIGMA_HEATING.saveIcon} className="size-3 max-w-none" />
+                {saving ? "Se salvează…" : "Salvează"}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );

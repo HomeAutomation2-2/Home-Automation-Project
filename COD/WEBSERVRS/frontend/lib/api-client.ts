@@ -72,11 +72,30 @@ export class ApiClient {
     return this.request<Room[]>("/rooms");
   }
 
+  /** POST /rooms */
+  async createRoom(name: string): Promise<Room> {
+    return this.request<Room>("/rooms", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
+  }
+
   /** GET /light-zones — query opțional room_id */
   async getLightZones(roomId?: number): Promise<LightZone[]> {
     const query =
       roomId !== undefined ? `?room_id=${encodeURIComponent(String(roomId))}` : "";
     return this.request<LightZone[]>(`/light-zones${query}`);
+  }
+
+  /** POST /light-zones */
+  async createLightZone(body: {
+    room_id: number;
+    name: string;
+  }): Promise<LightZone> {
+    return this.request<LightZone>("/light-zones", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
   }
 
   /** PATCH /light-zones/:id */
@@ -86,6 +105,12 @@ export class ApiClient {
       body: JSON.stringify({ is_on }),
     });
   }
+
+  /**
+   * Viitor: GET /temperature-readings?room_id=&from=&to=
+   * Modulul Nest există; rutele HTTP nu sunt încă implementate.
+   */
+  // async getTemperatureReadings(...) — de adăugat când backend expune endpoint-ul
 
   /** GET /heating-programs */
   async getHeatingPrograms(): Promise<TempProgram[]> {

@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { parseReportDateRange } from "@/lib/reports/default-date-range";
 import { AccessLogPagination } from "@/components/access-log/access-log-pagination";
 import { CurrentlyHomeSection } from "@/components/presence/currently-home-section";
 import {
@@ -26,8 +28,11 @@ const PAGE_SIZE = 5;
 const EMPTY_ACTIVITY_MSG =
   "Nu există evenimente de acces în intervalul selectat.";
 
-function buildDefaultDraft(): PresenceFilterDraft {
-  const range = defaultPresenceRange();
+function buildDefaultDraft(dateFrom?: string, dateTo?: string): PresenceFilterDraft {
+  const range =
+    dateFrom && dateTo
+      ? { dateFrom, dateTo }
+      : defaultPresenceRange();
   return {
     search: "",
     dateFrom: range.dateFrom,
@@ -37,16 +42,30 @@ function buildDefaultDraft(): PresenceFilterDraft {
 }
 
 export function PresencePageContent() {
+  const searchParams = useSearchParams();
+  const urlRange = parseReportDateRange(
+    searchParams.get("dateFrom"),
+    searchParams.get("dateTo"),
+  );
+  const initialDraft = useMemo(
+    () => buildDefaultDraft(urlRange.dateFrom, urlRange.dateTo),
+    [urlRange.dateFrom, urlRange.dateTo],
+  );
   const [presence, setPresence] = useState<UserPresenceItem[]>([]);
   const [logs, setLogs] = useState<UnifiedLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
-  const [draftFilters, setDraftFilters] = useState<PresenceFilterDraft>(buildDefaultDraft);
+  const [draftFilters, setDraftFilters] = useState<PresenceFilterDraft>(initialDraft);
   const [appliedFilters, setAppliedFilters] =
-    useState<PresenceFilterDraft>(buildDefaultDraft);
+    useState<PresenceFilterDraft>(initialDraft);
   const [page, setPage] = useState(1);
   const inFlightRef = useRef(false);
+
+  useEffect(() => {
+    setDraftFilters(initialDraft);
+    setAppliedFilters(initialDraft);
+    setPage(1);
+  }, [initialDraft]);
 
   const loadData = useCallback(async (options?: { silent?: boolean }) => {
     if (inFlightRef.current) return;
@@ -65,7 +84,6 @@ export function PresencePageContent() {
       ]);
       setPresence(presenceData);
       setLogs(logsData);
-      setLastSyncedAt(new Date());
       if (silent) setError(null);
     } catch (err) {
       if (!silent) {
@@ -147,31 +165,11 @@ export function PresencePageContent() {
       />
     ) : null;
 
-  const syncLabel = lastSyncedAt
-    ? lastSyncedAt.toLocaleTimeString("ro-RO", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      })
-    : null;
-
   return (
     <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-[-0.24px] text-[#191b23]">
-            Prezență
-          </h1>
-          <p className="mt-1 text-sm leading-[18px] text-[#555f6d]">
-            Cine e acasă acum și istoricul intrărilor și ieșirilor.
-          </p>
-        </div>
-        {syncLabel && (
-          <p className="text-xs text-[#555f6d]">
-            Actualizat la {syncLabel} · reîmprospătare la {PRESENCE_POLL_INTERVAL_MS / 1000}s
-          </p>
-        )}
-      </div>
+      <h1 className="text-2xl font-semibold tracking-[-0.24px] text-[#191b23]">
+        Prezență
+      </h1>
 
       {error && <ErrorBanner message={error} />}
       {rangeError && !loading && <ErrorBanner message={rangeError} />}

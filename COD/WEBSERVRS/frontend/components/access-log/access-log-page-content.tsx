@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { parseReportDateRange } from "@/lib/reports/default-date-range";
 import {
   AccessLogFilters,
   type AccessLogFilterDraft,
@@ -49,14 +51,38 @@ function applyFilters(
   });
 }
 
+function buildInitialAccessFilters(
+  dateFrom: string,
+  dateTo: string,
+): AccessLogFilterDraft {
+  return { ...DEFAULT_FILTERS, dateFrom, dateTo };
+}
+
 export function AccessLogPageContent() {
+  const searchParams = useSearchParams();
+  const urlRange = parseReportDateRange(
+    searchParams.get("dateFrom"),
+    searchParams.get("dateTo"),
+  );
+  const initialFilters = useMemo(
+    () => buildInitialAccessFilters(urlRange.dateFrom, urlRange.dateTo),
+    [urlRange.dateFrom, urlRange.dateTo],
+  );
+
   const [allRows, setAllRows] = useState<AccessLogRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [draftFilters, setDraftFilters] = useState<AccessLogFilterDraft>(DEFAULT_FILTERS);
+  const [draftFilters, setDraftFilters] =
+    useState<AccessLogFilterDraft>(initialFilters);
   const [appliedFilters, setAppliedFilters] =
-    useState<AccessLogFilterDraft>(DEFAULT_FILTERS);
+    useState<AccessLogFilterDraft>(initialFilters);
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setDraftFilters(initialFilters);
+    setAppliedFilters(initialFilters);
+    setPage(1);
+  }, [initialFilters]);
 
   const loadLogs = useCallback(async () => {
     setLoading(true);
@@ -125,14 +151,9 @@ export function AccessLogPageContent() {
   return (
     <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-[-0.24px] text-[#191b23]">
-            Jurnal acces
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm leading-5 text-[#555f6d]">
-            Istoricul intrărilor și ieșirilor din locație.
-          </p>
-        </div>
+        <h1 className="text-2xl font-semibold tracking-[-0.24px] text-[#191b23]">
+          Jurnal acces
+        </h1>
         <button
           type="button"
           disabled={loading || filtered.length === 0}

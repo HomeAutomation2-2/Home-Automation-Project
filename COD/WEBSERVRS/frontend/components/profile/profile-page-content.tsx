@@ -40,7 +40,6 @@ export function ProfilePageContent() {
     <div className="mx-auto max-w-3xl">
       <PageHeader
         title="Profil utilizator"
-        subtitle="Datele contului tău și sesiunea curentă."
         crumbs={[{ label: "Profil" }]}
       />
 

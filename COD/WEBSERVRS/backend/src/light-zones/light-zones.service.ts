@@ -89,6 +89,7 @@ export class LightZonesService
             throw new NotFoundException(`Light zone with ID ${id} not found`);
 
         this.zone_repository.merge(zone, update_request);
+        zone.last_changed_at = new Date();
 
         return await this.zone_repository.save(zone);
     }

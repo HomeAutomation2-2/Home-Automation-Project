@@ -7,8 +7,8 @@ type SessionExpiredBannerProps = {
 
 /** Figma node 102:56 — alert sesiune expirată / eroare auth */
 export function SessionExpiredBanner({
-  title = "Session Expired",
-  description = "Please sign in again to continue managing your infrastructure.",
+  title = "Sesiune expirată",
+  description = "Autentifică-te din nou.",
 }: SessionExpiredBannerProps) {
   return (
     <div

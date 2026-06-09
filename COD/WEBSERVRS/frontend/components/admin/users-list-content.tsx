@@ -108,7 +108,6 @@ export function UsersListContent() {
     <>
       <PageHeader
         title="Utilizatori"
-        subtitle="Gestionează accesul, rolurile și prezența în sistem."
         crumbs={[{ label: "Prezentare generală" }, { label: "Utilizatori" }]}
         actions={
           userIsAdmin ? (

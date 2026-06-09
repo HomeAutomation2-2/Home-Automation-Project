@@ -11,7 +11,10 @@ export function HeatingSubNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-wrap gap-2 border-b border-[#c3c6d7] pb-3">
+    <nav
+      className="flex flex-wrap gap-1 border-b border-[#c3c6d7]"
+      aria-label="Secțiuni încălzire"
+    >
       {LINKS.map((link) => {
         const active = link.exact
           ? pathname === link.href
@@ -20,10 +23,10 @@ export function HeatingSubNav() {
           <Link
             key={link.href}
             href={link.href}
-            className={`rounded px-3 py-1.5 text-sm font-medium ${
+            className={`border-b-2 px-4 py-2 text-sm font-semibold transition-colors ${
               active
-                ? "bg-[rgba(37,99,235,0.1)] text-[#004ac6]"
-                : "text-[#555f6d] hover:bg-[#faf8ff] hover:text-[#191b23]"
+                ? "border-[#004ac6] text-[#004ac6]"
+                : "border-transparent text-[#555f6d] hover:text-[#191b23]"
             }`}
           >
             {link.label}

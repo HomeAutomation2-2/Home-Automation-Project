@@ -42,7 +42,7 @@ export const SIDE_NAV_ITEMS: NavItemConfig[] = [
   {
     id: "presence",
 
-    href: "/reports/presence",
+    href: "/presence",
 
     label: "Prezență",
 
@@ -58,7 +58,7 @@ export const SIDE_NAV_ITEMS: NavItemConfig[] = [
 
 /** Sub-rute /reports cu item dedicat în meniu — Reports nu le marchează active */
 
-const REPORTS_OWNED_BY_OTHER_NAV: readonly string[] = ["/reports/presence"];
+const REPORTS_OWNED_BY_OTHER_NAV: readonly string[] = [];
 
 export function isNavItemActive(pathname: string, href: string): boolean {
   if (href === "/dashboard") return pathname === "/dashboard";
@@ -135,8 +135,15 @@ export function getPageMeta(pathname: string): PageMeta {
     return { title: "Acces", crumbs: [{ label: "Acces" }] };
   }
 
-  if (pathname.startsWith("/reports/presence")) {
+  if (pathname === "/presence" || pathname.startsWith("/presence/")) {
     return { title: "Prezență", crumbs: [{ label: "Prezență" }] };
+  }
+
+  if (pathname.startsWith("/reports/presence")) {
+    return {
+      title: "Raport prezență",
+      crumbs: [{ label: "Rapoarte", href: "/reports" }, { label: "Prezență" }],
+    };
   }
 
   if (pathname.startsWith("/reports")) {
@@ -145,6 +152,16 @@ export function getPageMeta(pathname: string): PageMeta {
 
   if (pathname.startsWith("/lights")) {
     return { title: "Iluminat", crumbs: [{ label: "Iluminat" }] };
+  }
+
+  if (pathname.startsWith("/heating/charts")) {
+    return {
+      title: "Încălzire",
+      crumbs: [
+        { label: "Rapoarte", href: "/reports" },
+        { label: "Temperaturi" },
+      ],
+    };
   }
 
   if (pathname.startsWith("/heating/override")) {
