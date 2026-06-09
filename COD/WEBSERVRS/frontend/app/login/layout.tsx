@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign In — BlueLock",
+  title: "Conectare — BlueLock",
 };
 
 export default function LoginLayout({

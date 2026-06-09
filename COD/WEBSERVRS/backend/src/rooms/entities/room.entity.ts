@@ -22,5 +22,8 @@ export class Room
     current_temp!: number
 
     @Column({ type: "int", nullable: true })
-    temp_program_id!: number|null
+    temp_program_id!: number | null
+
+    @Column({ type: "int", default: 5 })
+    sampling_minutes!: number
 }

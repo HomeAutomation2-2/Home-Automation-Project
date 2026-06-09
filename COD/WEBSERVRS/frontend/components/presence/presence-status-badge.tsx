@@ -16,7 +16,7 @@ export function PresenceStatusBadge({ status }: PresenceStatusBadgeProps) {
         className={`size-1.5 rounded-full ${active ? "bg-[#004ac6]" : "bg-[#9ca3af]"}`}
         aria-hidden
       />
-      {active ? "Active" : "Away"}
+      {active ? "Acasă" : "Plecat"}
     </span>
   );
 }

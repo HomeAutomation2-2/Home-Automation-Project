@@ -15,13 +15,13 @@ export function ZoneTemperaturesPanel({ state }: ZoneTemperaturesPanelProps) {
     <div className="rounded-lg border border-[#c3c6d7] bg-white">
       <div className="flex items-center justify-between border-b border-[#c3c6d7] px-4 pb-[17px] pt-4">
         <h2 className="text-lg font-semibold leading-7 text-[#191b23]">
-          Zone Temperatures
+          Temperaturi camere
         </h2>
         <Link
           href="/heating"
           className="text-[13px] leading-[18px] text-[#004ac6] hover:underline"
         >
-          Manage
+          Gestionează
         </Link>
       </div>
 

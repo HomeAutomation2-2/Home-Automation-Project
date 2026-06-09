@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, ParseIntPipe, Patch } from '@nestjs/common';
 import { TemperatureProgramsService } from './temperature-programs.service';
 import { CreateTemperatureProgramDto } from './dto/create-program.dto';
+import { UpdateTemperatureProgramDto } from './dto/update-program.dto';
 
 
 
@@ -22,6 +23,14 @@ export class TemperatureProgramsController
     createProgram(@Body() createDto: CreateTemperatureProgramDto) 
     {
         return this.programsService.create(createDto);
+    }
+
+    @Patch(':id')
+    updateProgram(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateDto: UpdateTemperatureProgramDto,
+    ) {
+        return this.programsService.update(id, updateDto);
     }
 
 

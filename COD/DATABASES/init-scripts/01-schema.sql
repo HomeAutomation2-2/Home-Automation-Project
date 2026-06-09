@@ -34,7 +34,17 @@ CREATE TABLE IF NOT EXISTS rooms (
     temp_program_id INT          REFERENCES temperature_programs(id) ON DELETE SET NULL,
     is_heating      BOOLEAN      DEFAULT false,
     offset_value    DECIMAL(3,2) DEFAULT 0.0,
-    current_temp    DECIMAL(4,2) DEFAULT 0.0
+    current_temp    DECIMAL(4,2) DEFAULT 0.0,
+    sampling_minutes INT         NOT NULL DEFAULT 5
+);
+
+CREATE TABLE IF NOT EXISTS heating_overrides (
+    id               SERIAL PRIMARY KEY,
+    program_id       INT NOT NULL REFERENCES temperature_programs(id) ON DELETE CASCADE,
+    duration_minutes INT,
+    expires_at       TIMESTAMP,
+    is_active        BOOLEAN NOT NULL DEFAULT true,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS light_zones (

@@ -80,28 +80,25 @@ export function formatPresenceTimestamp(date: Date, now = new Date()): string {
   yesterday.setDate(now.getDate() - 1);
   const isYesterday = date.toDateString() === yesterday.toDateString();
 
-  const time = date.toLocaleTimeString("en-US", {
+  const time = date.toLocaleTimeString("ro-RO", {
     hour: "2-digit",
     minute: "2-digit",
-    hour12: true,
   });
 
-  if (isToday) return `Today, ${time}`;
-  if (isYesterday) return `Yesterday, ${time}`;
-  return date.toLocaleString("en-US", {
+  if (isToday) return `Astăzi, ${time}`;
+  if (isYesterday) return `Ieri, ${time}`;
+  return date.toLocaleString("ro-RO", {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    hour12: true,
   });
 }
 
 export function formatSinceTime(date: Date): string {
-  return `Since ${date.toLocaleTimeString("en-US", {
+  return `De la ${date.toLocaleTimeString("ro-RO", {
     hour: "2-digit",
     minute: "2-digit",
-    hour12: true,
   })}`;
 }
 
@@ -241,7 +238,7 @@ export function computePresenceReport(
           userId: event.userId,
           name: event.name,
           initials: initialsFromName(event.name),
-          eventLabel: "Home Entry",
+          eventLabel: "Intrare acasă",
           occurredAt: event.occurredAt,
           timestampLabel: formatPresenceTimestamp(event.occurredAt, now),
           durationLabel: visitOpen ? "—" : formatDurationMs(durationMs),
@@ -259,7 +256,7 @@ export function computePresenceReport(
         userId: event.userId,
         name: event.name,
         initials: initialsFromName(event.name),
-        eventLabel: "Home Exit",
+        eventLabel: "Ieșire acasă",
         occurredAt: event.occurredAt,
         timestampLabel: formatPresenceTimestamp(event.occurredAt, now),
         durationLabel: formatDurationMs(durationMs),
@@ -276,7 +273,7 @@ export function computePresenceReport(
       userId: user.id,
       name,
       initials: initialsFromName(name),
-      sinceLabel: since ? formatSinceTime(since) : "Since —",
+      sinceLabel: since ? formatSinceTime(since) : "De la —",
     };
   });
 

@@ -37,7 +37,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       <div className="space-y-2 text-sm text-[#555f6d]">
         <p>Acces permis doar administratorilor. Contul tău nu are rol admin.</p>
         <Link href="/dashboard" className="font-semibold text-[#004ac6] hover:underline">
-          Înapoi la Dashboard
+          Înapoi la prezentare
         </Link>
       </div>
     );

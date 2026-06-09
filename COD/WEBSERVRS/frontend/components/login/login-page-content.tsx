@@ -22,16 +22,16 @@ function normalizePhone(value: string): string {
 }
 
 function validatePhone(phone: string): string | undefined {
-  if (phone.length === 0) return "Phone number is required.";
+  if (phone.length === 0) return "Numărul de telefon este obligatoriu.";
   if (phone.length !== PHONE_LENGTH)
-    return `Enter a ${PHONE_LENGTH}-digit phone number.`;
+    return `Introdu un număr de ${PHONE_LENGTH} cifre.`;
   return undefined;
 }
 
 function validatePassword(password: string): string | undefined {
-  if (password.length === 0) return "Password is required.";
+  if (password.length === 0) return "Parola este obligatorie.";
   if (password.length < PASSWORD_MIN)
-    return `Password must be at least ${PASSWORD_MIN} characters.`;
+    return `Parola trebuie să aibă cel puțin ${PASSWORD_MIN} caractere.`;
   return undefined;
 }
 
@@ -90,11 +90,11 @@ export function LoginPageContent() {
   }
 
   const showSessionBanner = sessionExpired || Boolean(error);
-  const bannerTitle = sessionExpired ? "Session Expired" : "Sign in failed";
+  const bannerTitle = sessionExpired ? "Sesiune expirată" : "Autentificare eșuată";
   const bannerDescription = sessionExpired
-    ? "Please sign in again to continue managing your infrastructure."
+    ? "Conectează-te din nou pentru a continua."
     : (error ??
-      "Please check your phone number and password, then try again.");
+      "Verifică numărul de telefon și parola, apoi încearcă din nou.");
 
   return (
     <div className="flex min-h-full items-center justify-center px-4 py-16 sm:py-[231px]">
@@ -120,7 +120,7 @@ export function LoginPageContent() {
 
             <div className="flex flex-col gap-6">
               <FigmaField
-                label="Phone Number"
+                label="Telefon"
                 name="phone"
                 type="tel"
                 inputMode="numeric"
@@ -135,7 +135,7 @@ export function LoginPageContent() {
 
               <div className="flex flex-col gap-1 pb-2">
                 <FigmaField
-                  label="Password"
+                  label="Parolă"
                   name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
@@ -148,9 +148,9 @@ export function LoginPageContent() {
                   labelExtra={
                     <span
                       className="cursor-default text-[13px] leading-[18px] text-[#004ac6]"
-                      title="Contact your system administrator"
+                      title="Contactează administratorul"
                     >
-                      Forgot password?
+                      Ai uitat parola?
                     </span>
                   }
                   rightSlot={
@@ -159,7 +159,7 @@ export function LoginPageContent() {
                       className="flex items-center justify-center rounded p-1 hover:bg-[#faf8ff]"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={
-                        showPassword ? "Hide password" : "Show password"
+                        showPassword ? "Ascunde parola" : "Arată parola"
                       }
                     >
                       {showPassword ? <EyeIcon /> : <EyeOffIcon />}
@@ -173,7 +173,7 @@ export function LoginPageContent() {
                 disabled={!canSubmit}
                 className="flex w-full items-center justify-center rounded-[2px] bg-[#004ac6] px-6 py-4 text-[14px] font-semibold leading-5 text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isLoading ? "Signing in…" : "Sign In"}
+                {isLoading ? "Se conectează…" : "Conectare"}
               </button>
             </div>
           </form>
@@ -182,7 +182,7 @@ export function LoginPageContent() {
         <div className="flex items-center justify-center gap-1">
           <ShieldIcon />
           <p className="text-center text-[13px] leading-[18px] text-[#555f6d]">
-            Enterprise-grade encryption active.
+            Conexiune securizată activă.
           </p>
         </div>
       </div>

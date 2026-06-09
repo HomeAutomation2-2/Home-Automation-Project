@@ -2,20 +2,20 @@ import type { AccessLogRow } from "@/lib/access-log/parse-access-log";
 
 export function exportAccessLogsCsv(rows: AccessLogRow[]): void {
   const header = [
-    "User",
-    "Identity",
-    "Access Point",
-    "Direction",
-    "Result",
-    "Timestamp",
+    "Utilizator",
+    "Identitate",
+    "Punct acces",
+    "Direcție",
+    "Rezultat",
+    "Data și ora",
   ];
   const lines = rows.map((row) =>
     [
       row.name,
       row.identitySub,
       row.accessPoint,
-      row.direction === "entry" ? "Entry" : "Exit",
-      "Authorized",
+      row.direction === "entry" ? "Intrare" : "Ieșire",
+      "Autorizat",
       row.timestampLabel,
     ]
       .map((cell) => `"${cell.replace(/"/g, '""')}"`)
@@ -26,7 +26,7 @@ export function exportAccessLogsCsv(rows: AccessLogRow[]): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `access-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `jurnal-acces-${new Date().toISOString().slice(0, 10)}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }

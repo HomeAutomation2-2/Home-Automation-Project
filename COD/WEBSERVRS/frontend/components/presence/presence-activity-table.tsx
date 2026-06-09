@@ -18,7 +18,7 @@ export function PresenceActivityTable({
     <div className="overflow-hidden rounded-lg border border-[#c3c6d7] bg-white">
       {loading && (
         <p className="px-4 py-12 text-center text-sm text-[#555f6d]">
-          Loading activity…
+          Se încarcă activitatea…
         </p>
       )}
       {!loading && (
@@ -26,10 +26,10 @@ export function PresenceActivityTable({
           <table className="w-full min-w-[720px] text-left">
             <thead className="border-b border-[#c3c6d7] bg-[#f3f3fe]">
               <tr className="text-xs font-bold uppercase tracking-[0.6px] text-[#555f6d]">
-                <th className="px-4 py-2">User</th>
-                <th className="px-4 py-2">Event Type</th>
-                <th className="px-4 py-2">Timestamp</th>
-                <th className="px-4 py-2">Duration</th>
+                <th className="px-4 py-2">Utilizator</th>
+                <th className="px-4 py-2">Eveniment</th>
+                <th className="px-4 py-2">Data și ora</th>
+                <th className="px-4 py-2">Durată</th>
                 <th className="px-4 py-2">Status</th>
               </tr>
             </thead>

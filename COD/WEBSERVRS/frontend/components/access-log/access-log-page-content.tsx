@@ -71,7 +71,7 @@ export function AccessLogPageContent() {
       setAllRows(buildAccessLogRows(logs, presence));
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Could not load access logs.",
+        err instanceof ApiError ? err.message : "Nu s-a putut încărca jurnalul de acces.",
       );
     } finally {
       setLoading(false);
@@ -127,11 +127,10 @@ export function AccessLogPageContent() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-[-0.24px] text-[#191b23]">
-            Facility Access Logs
+            Jurnal acces
           </h1>
           <p className="mt-1 max-w-2xl text-sm leading-5 text-[#555f6d]">
-            Comprehensive audit trail of all physical entry and exit events across
-            monitored zones.
+            Istoricul intrărilor și ieșirilor din locație.
           </p>
         </div>
         <button

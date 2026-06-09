@@ -40,17 +40,17 @@ export function SystemStatusBanner({
         </div>
         <div>
           <h2 className="text-lg font-semibold leading-7 text-[#191b23]">
-            System Status: {online ? "Online" : "Offline"}
+            Status sistem: {online ? "Online" : "Offline"}
           </h2>
           <p className="text-[13px] leading-[18px] text-[#555f6d]">
             {online
-              ? "All systems operating within normal parameters."
-              : "Unele servicii nu răspund. Verifică backend-ul."}
+              ? "Totul funcționează normal."
+              : "Datele nu s-au putut încărca. Reîncarcă pagina sau încearcă mai târziu."}
           </p>
         </div>
       </div>
       <div className="text-right">
-        <p className="text-xs font-semibold tracking-[0.6px] text-[#555f6d]">Last Sync</p>
+        <p className="text-xs font-semibold tracking-[0.6px] text-[#555f6d]">Ultima sincronizare</p>
         <p className="text-[13px] font-semibold leading-[18px] text-[#191b23]">
           {lastSyncLabel}
         </p>

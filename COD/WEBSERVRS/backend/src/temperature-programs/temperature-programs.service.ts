@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TemperatureProgram } from './entities/temperature-program.entity';
 import { CreateTemperatureProgramDto } from './dto/create-program.dto';
+import { UpdateTemperatureProgramDto } from './dto/update-program.dto';
 
 
 
@@ -27,6 +28,22 @@ export class TemperatureProgramsService
     {
         const newProgram = this.programRepository.create(createDto)
         return await this.programRepository.save(newProgram)
+    }
+
+    async update(id: number, updateDto: UpdateTemperatureProgramDto) {
+        if (updateDto.name === undefined && updateDto.schedule === undefined) {
+            throw new BadRequestException('Provide name and/or schedule to update');
+        }
+
+        const program = await this.programRepository.findOne({ where: { id } });
+        if (!program) {
+            throw new NotFoundException(`Program with ID ${id} not found`);
+        }
+
+        if (updateDto.name !== undefined) program.name = updateDto.name;
+        if (updateDto.schedule !== undefined) program.schedule = updateDto.schedule;
+
+        return this.programRepository.save(program);
     }
 
 

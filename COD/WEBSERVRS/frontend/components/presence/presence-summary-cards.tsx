@@ -43,7 +43,7 @@ export function PresenceSummaryCards({
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       <SummaryCard
-        title="Total Home Now"
+        title="Acasă acum"
         iconSrc={FIGMA_PRESENCE.iconHomeNow}
         iconBg="bg-[rgba(37,99,235,0.1)]"
       >
@@ -51,12 +51,12 @@ export function PresenceSummaryCards({
           <span className="text-[30px] font-bold leading-[38px] tracking-[-0.6px] text-[#191b23]">
             {totalHomeNow}
           </span>
-          <span className="text-[13px] text-[#555f6d]">Residents</span>
+          <span className="text-[13px] text-[#555f6d]">persoane</span>
         </p>
       </SummaryCard>
 
       <SummaryCard
-        title="Last Entry"
+        title="Ultima intrare"
         iconSrc={FIGMA_PRESENCE.iconLastEntry}
         iconBg="bg-[#ededf9]"
       >
@@ -71,7 +71,7 @@ export function PresenceSummaryCards({
       </SummaryCard>
 
       <SummaryCard
-        title="Last Exit"
+        title="Ultima ieșire"
         iconSrc={FIGMA_PRESENCE.iconLastExit}
         iconBg="bg-[#ededf9]"
       >

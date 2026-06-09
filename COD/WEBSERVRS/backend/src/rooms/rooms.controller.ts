@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, BadRequestException } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
+import { UpdateRoomDto } from './dto/update-room.dto';
 
 
 
@@ -45,13 +46,8 @@ export class RoomsController
         return this.roomsService.setTempProgramId(id, clean_program_id)
     }
 
-    // @Patch(':id')
-    // update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
-    //   return this.roomsService.update(+id, updateRoomDto);
-    // }
-
-    // @Delete(':id')
-    // remove(@Param('id') id: string) {
-    //   return this.roomsService.remove(+id);
-    // }
+    @Patch(':id')
+    update(@Param('id', ParseIntPipe) id: number, @Body() updateRoomDto: UpdateRoomDto) {
+        return this.roomsService.updateRoom(id, updateRoomDto);
+    }
 }

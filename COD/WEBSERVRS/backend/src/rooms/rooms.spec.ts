@@ -177,4 +177,25 @@ describe('RoomsService', () =>
             await expect(service.setTempProgramId(999, 5)).rejects.toThrow(NotFoundException);
         });
     });
+
+    describe('updateRoom', () => {
+        it('ar trebui să actualizeze offset și sampling', async () => {
+            const room = {
+                id: 1,
+                name: 'Living',
+                offset_value: 0,
+                sampling_minutes: 5,
+            };
+            roomRepo.findOne.mockResolvedValue(room);
+            roomRepo.save.mockImplementation(async (r: typeof room) => r);
+
+            const result = await service.updateRoom(1, {
+                offset_value: 1.5,
+                sampling_minutes: 10,
+            });
+
+            expect(result.offset_value).toBe(1.5);
+            expect(result.sampling_minutes).toBe(10);
+        });
+    });
 });

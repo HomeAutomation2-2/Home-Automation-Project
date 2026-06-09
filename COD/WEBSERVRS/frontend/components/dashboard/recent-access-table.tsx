@@ -30,12 +30,12 @@ export function RecentAccessTable({ state }: RecentAccessTableProps) {
   return (
     <div className="rounded-lg border border-[#c3c6d7] bg-white">
       <div className="flex items-center justify-between border-b border-[#c3c6d7] px-4 pb-[17px] pt-4">
-        <h2 className="text-lg font-semibold leading-7 text-[#191b23]">Recent Access</h2>
+        <h2 className="text-lg font-semibold leading-7 text-[#191b23]">Acces recent</h2>
         <Link
           href="/access-log"
           className="text-[13px] leading-[18px] text-[#004ac6] hover:underline"
         >
-          View All
+          Vezi tot
         </Link>
       </div>
 
@@ -54,9 +54,9 @@ export function RecentAccessTable({ state }: RecentAccessTableProps) {
         <div className="overflow-hidden">
           <div className="border-b border-[#c3c6d7] bg-[#f3f3fe]">
             <div className="grid grid-cols-[1fr_auto_auto] text-xs font-semibold tracking-[0.6px] text-[#555f6d]">
-              <span className="px-4 py-2">User</span>
-              <span className="px-4 py-2">Time</span>
-              <span className="px-4 py-2">Event</span>
+              <span className="px-4 py-2">Utilizator</span>
+              <span className="px-4 py-2">Ora</span>
+              <span className="px-4 py-2">Eveniment</span>
             </div>
           </div>
 
@@ -97,7 +97,7 @@ export function RecentAccessTable({ state }: RecentAccessTableProps) {
                         row.direction === "entry" ? "text-[#004ac6]" : "text-[#555f6d]"
                       }`}
                     >
-                      {row.direction === "entry" ? "Entry" : "Exit"}
+                      {row.direction === "entry" ? "Intrare" : "Ieșire"}
                     </span>
                   </div>
                 </li>

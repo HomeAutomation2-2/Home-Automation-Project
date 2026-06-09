@@ -123,4 +123,21 @@ describe('TemperatureProgramsService', () =>
             await expect(service.remove(999)).rejects.toThrow(NotFoundException);
         });
     });
+
+    describe('update', () => {
+        it('ar trebui să actualizeze numele programului', async () => {
+            const program = { id: 1, name: 'Old', schedule: [] };
+            programRepo.findOne.mockResolvedValue(program);
+            programRepo.save.mockImplementation(async (p: typeof program) => p);
+
+            const result = await service.update(1, { name: 'New' });
+
+            expect(result.name).toBe('New');
+            expect(programRepo.save).toHaveBeenCalled();
+        });
+
+        it('ar trebui să arunce BadRequestException fără câmpuri', async () => {
+            await expect(service.update(1, {})).rejects.toThrow('Provide name');
+        });
+    });
 });

@@ -14,6 +14,7 @@ import type {
   UpdateUserRequest,
 } from "@/lib/types/admin-user";
 import type { UserPresenceItem } from "@/lib/types/user-presence";
+import type { HeatingOverrideStatus } from "@/lib/types/heating-override";
 
 type NestErrorBody = {
   message?: string | string[];
@@ -89,6 +90,85 @@ export class ApiClient {
   /** GET /heating-programs */
   async getHeatingPrograms(): Promise<TempProgram[]> {
     return this.request<TempProgram[]>("/heating-programs");
+  }
+
+  /** GET /rooms/:id */
+  async getRoom(id: number): Promise<Room> {
+    return this.request<Room>(`/rooms/${id}`);
+  }
+
+  /** POST /heating-programs */
+  async createHeatingProgram(body: {
+    name: string;
+    schedule: TempProgram["schedule"];
+  }): Promise<TempProgram> {
+    return this.request<TempProgram>("/heating-programs", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  /** DELETE /heating-programs/:id */
+  async deleteHeatingProgram(id: number): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/heating-programs/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  /** PATCH /rooms/:id/temp-program */
+  async setRoomTempProgram(
+    roomId: number,
+    tempProgramId: number | null,
+  ): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/rooms/${roomId}/temp-program`, {
+      method: "PATCH",
+      body: JSON.stringify({ temp_program_id: tempProgramId }),
+    });
+  }
+
+  /** PATCH /rooms/:id */
+  async updateRoom(
+    id: number,
+    body: { offset_value?: number; sampling_minutes?: number },
+  ): Promise<Room> {
+    return this.request<Room>(`/rooms/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  }
+
+  /** PATCH /heating-programs/:id */
+  async updateHeatingProgram(
+    id: number,
+    body: { name?: string; schedule?: TempProgram["schedule"] },
+  ): Promise<TempProgram> {
+    return this.request<TempProgram>(`/heating-programs/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  }
+
+  /** GET /heating/override */
+  async getHeatingOverride(): Promise<HeatingOverrideStatus> {
+    return this.request<HeatingOverrideStatus>("/heating/override");
+  }
+
+  /** POST /heating/override */
+  async activateHeatingOverride(body: {
+    program_id: number;
+    duration_minutes: number;
+  }): Promise<HeatingOverrideStatus> {
+    return this.request<HeatingOverrideStatus>("/heating/override", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  /** DELETE /heating/override */
+  async deactivateHeatingOverride(): Promise<HeatingOverrideStatus> {
+    return this.request<HeatingOverrideStatus>("/heating/override", {
+      method: "DELETE",
+    });
   }
 
   /** POST /users/register (admin) */
@@ -186,6 +266,6 @@ export class ApiClient {
     } catch {
       /* răspuns non-JSON */
     }
-    return `Eroare API (${response.status})`;
+    return "A apărut o eroare. Încearcă din nou.";
   }
 }

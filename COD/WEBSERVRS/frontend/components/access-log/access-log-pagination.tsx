@@ -28,27 +28,27 @@ export function AccessLogPagination({
     <div className="flex flex-col gap-3 border-t border-[#c3c6d7] bg-[#faf8ff] px-4 pb-2 pt-[9px] sm:flex-row sm:items-center sm:justify-between">
       <p className="text-[13px] leading-4 text-[#555f6d]">
         {totalItems === 0 ? (
-          "Showing 0 entries"
+          "Niciun eveniment"
         ) : (
           <>
-            Showing <span className="font-semibold text-[#191b23]">{from}</span> to{" "}
-            <span className="font-semibold text-[#191b23]">{to}</span> of{" "}
+            Afișate{" "}
+            <span className="font-semibold text-[#191b23]">{from}</span>–
+            <span className="font-semibold text-[#191b23]">{to}</span> din{" "}
             <span className="font-semibold text-[#191b23]">
-              {totalItems.toLocaleString("en-US")}
-            </span>{" "}
-            entries
+              {totalItems.toLocaleString("ro-RO")}
+            </span>
           </>
         )}
       </p>
 
       {canPaginate && (
-        <nav className="flex items-center gap-1" aria-label="Pagination">
+        <nav className="flex items-center gap-1" aria-label="Paginare">
           <button
             type="button"
             disabled={currentPage <= 1}
             onClick={() => onPageChange(currentPage - 1)}
             className="flex items-center justify-center rounded border border-[#c3c6d7] bg-white px-1.5 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="Previous page"
+            aria-label="Pagina anterioară"
           >
             <img alt="" src={FIGMA_ACCESS_LOG.pagePrev} className="h-[9px] w-[6px]" />
           </button>
@@ -84,7 +84,7 @@ export function AccessLogPagination({
             disabled={currentPage >= totalPages}
             onClick={() => onPageChange(currentPage + 1)}
             className="flex items-center justify-center rounded border border-[#c3c6d7] bg-white px-1.5 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="Next page"
+            aria-label="Pagina următoare"
           >
             <img alt="" src={FIGMA_ACCESS_LOG.pageNext} className="h-[9px] w-[6px]" />
           </button>

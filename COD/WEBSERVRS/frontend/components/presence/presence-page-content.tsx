@@ -70,7 +70,7 @@ export function PresencePageContent() {
     } catch (err) {
       if (!silent) {
         setError(
-          err instanceof ApiError ? err.message : "Could not load presence report.",
+          err instanceof ApiError ? err.message : "Nu s-a putut încărca raportul de prezență.",
         );
       }
     } finally {
@@ -160,15 +160,15 @@ export function PresencePageContent() {
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-[-0.24px] text-[#191b23]">
-            Presence Tracking
+            Prezență
           </h1>
           <p className="mt-1 text-sm leading-[18px] text-[#555f6d]">
-            Monitor real-time occupancy and historical access logs.
+            Cine e acasă acum și istoricul intrărilor și ieșirilor.
           </p>
         </div>
         {syncLabel && (
           <p className="text-xs text-[#555f6d]">
-            Actualizat la {syncLabel} · refresh la {PRESENCE_POLL_INTERVAL_MS / 1000}s
+            Actualizat la {syncLabel} · reîmprospătare la {PRESENCE_POLL_INTERVAL_MS / 1000}s
           </p>
         )}
       </div>
@@ -197,7 +197,7 @@ export function PresencePageContent() {
           loading={loading}
           emptyMessage={
             rangeError
-              ? "Corectați intervalul de date și apăsați Apply."
+              ? "Corectați intervalul de date și apăsați Aplică."
               : EMPTY_ACTIVITY_MSG
           }
           footer={paginationFooter}

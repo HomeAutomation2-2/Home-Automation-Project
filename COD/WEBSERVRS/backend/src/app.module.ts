@@ -8,6 +8,7 @@ import { LightZonesModule } from './light-zones/light-zones.module';
 import { TemperatureProgramsModule } from './temperature-programs/temperature-programs.module';
 import { TemperatureReadingsModule } from './temperature-readings/temperature-readings.module';
 import { EventsModule } from './events/events.module';
+import { HeatingOverrideModule } from './heating-override/heating-override.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -30,6 +31,7 @@ import { AppController } from './app.controller';
     TemperatureProgramsModule,
     TemperatureReadingsModule,
     EventsModule,
+    HeatingOverrideModule,
   ],
   controllers: [AppController],
 })

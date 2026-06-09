@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
+import { UpdateRoomDto } from './dto/update-room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
 import { Repository } from 'typeorm';
@@ -81,5 +82,18 @@ export class RoomsService
             throw new NotFoundException(`Room with ID ${room_id} not found`)
 
         return { success: true }
+    }
+
+    async updateRoom(room_id: number, update: UpdateRoomDto): Promise<Room> {
+        const room = await this.getRoom(room_id);
+
+        if (update.offset_value !== undefined) {
+            room.offset_value = update.offset_value;
+        }
+        if (update.sampling_minutes !== undefined) {
+            room.sampling_minutes = update.sampling_minutes;
+        }
+
+        return this.room_repository.save(room);
     }
 }

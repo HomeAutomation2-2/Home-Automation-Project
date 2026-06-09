@@ -66,7 +66,7 @@ export function AccessLogFilters({ draft, onChange, onApply }: AccessLogFiltersP
     <div className="rounded border border-[#c3c6d7] bg-white p-[17px] shadow-[0px_2px_4px_-1px_rgba(0,0,0,0.02)]">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
         <div className="relative md:col-span-4">
-          <FilterLabel>Search Event</FilterLabel>
+          <FilterLabel>Căutare</FilterLabel>
           <div className="relative mt-1">
             <img
               alt=""
@@ -75,7 +75,7 @@ export function AccessLogFilters({ draft, onChange, onApply }: AccessLogFiltersP
             />
             <FilterInput
               type="search"
-              placeholder="Search by name or reader ID..."
+              placeholder="Nume sau identificator…"
               value={draft.search}
               onChange={(e) => onChange({ ...draft, search: e.target.value })}
               className="pl-9"
@@ -84,26 +84,26 @@ export function AccessLogFilters({ draft, onChange, onApply }: AccessLogFiltersP
         </div>
 
         <div className="md:col-span-3">
-          <FilterLabel>Date Range</FilterLabel>
+          <FilterLabel>Interval</FilterLabel>
           <div className="mt-1 flex items-center gap-2">
             <FilterInput
               type="date"
               value={draft.dateFrom}
               onChange={(e) => onChange({ ...draft, dateFrom: e.target.value })}
-              aria-label="From date"
+              aria-label="De la"
             />
             <span className="text-[#555f6d]">-</span>
             <FilterInput
               type="date"
               value={draft.dateTo}
               onChange={(e) => onChange({ ...draft, dateTo: e.target.value })}
-              aria-label="To date"
+              aria-label="Până la"
             />
           </div>
         </div>
 
         <div className="md:col-span-2">
-          <FilterLabel>User Role</FilterLabel>
+          <FilterLabel>Rol</FilterLabel>
           <div className="mt-1">
             <FilterSelect
               value={draft.userRole}
@@ -111,15 +111,15 @@ export function AccessLogFilters({ draft, onChange, onApply }: AccessLogFiltersP
                 onChange({ ...draft, userRole: v as AccessLogFilterDraft["userRole"] })
               }
             >
-              <option value="all">All Roles</option>
+              <option value="all">Toate rolurile</option>
               <option value="admin">Administrator</option>
-              <option value="user">User</option>
+              <option value="user">Utilizator</option>
             </FilterSelect>
           </div>
         </div>
 
         <div className="md:col-span-2">
-          <FilterLabel>Event Result</FilterLabel>
+          <FilterLabel>Tip eveniment</FilterLabel>
           <div className="mt-1">
             <FilterSelect
               value={draft.eventResult}
@@ -127,9 +127,9 @@ export function AccessLogFilters({ draft, onChange, onApply }: AccessLogFiltersP
                 onChange({ ...draft, eventResult: v as AccessLogFilterDraft["eventResult"] })
               }
             >
-              <option value="all">All Results</option>
-              <option value="entry">Entry</option>
-              <option value="exit">Exit</option>
+              <option value="all">Toate</option>
+              <option value="entry">Intrare</option>
+              <option value="exit">Ieșire</option>
             </FilterSelect>
           </div>
         </div>
@@ -140,7 +140,7 @@ export function AccessLogFilters({ draft, onChange, onApply }: AccessLogFiltersP
             onClick={onApply}
             className="w-full rounded border border-[#c3c6d7] bg-[#ededf9] px-4 py-2 text-sm text-[#191b23] hover:bg-[#e4e4f5]"
           >
-            Filter
+            Filtrează
           </button>
         </div>
       </div>

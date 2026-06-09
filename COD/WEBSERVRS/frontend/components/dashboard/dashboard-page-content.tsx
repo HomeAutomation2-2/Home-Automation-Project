@@ -17,8 +17,8 @@ const initial = <T,>(): DataState<T> => ({ status: "loading" });
 
 function formatLastSync(date: Date): string {
   const diffSec = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (diffSec < 60) return "Just now";
-  if (diffSec < 3600) return `${Math.floor(diffSec / 60)} min ago`;
+  if (diffSec < 60) return "Acum";
+  if (diffSec < 3600) return `Acum ${Math.floor(diffSec / 60)} min`;
   return date.toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" });
 }
 
@@ -99,10 +99,10 @@ export function DashboardPageContent() {
           iconSrc={FIGMA_DASHBOARD.iconRoomsOn}
           iconBoxClass="h-5 w-[15px]"
           iconBgClass="bg-[rgba(37,99,235,0.1)]"
-          badgeLabel="Active"
+          badgeLabel="Activ"
           badgeVariant="active"
           value={String(metrics.roomsOn)}
-          label="Rooms ON"
+          label="Camere aprinse"
           loading={lights.status === "loading"}
           error={lights.status === "error" ? lights.message : null}
         />
@@ -110,10 +110,10 @@ export function DashboardPageContent() {
           iconSrc={FIGMA_DASHBOARD.iconAvgTemp}
           iconBoxClass="size-[18px]"
           iconBgClass="bg-[#e1e2ed]"
-          badgeLabel="Normal Mode"
+          badgeLabel="Normal"
           badgeVariant="neutral"
           value={metrics.avgTemp}
-          label="Avg Temp"
+          label="Temp. medie"
           loading={rooms.status === "loading"}
           error={rooms.status === "error" ? rooms.message : null}
         />
@@ -121,10 +121,10 @@ export function DashboardPageContent() {
           iconSrc={FIGMA_DASHBOARD.iconUsersHome}
           iconBoxClass="h-[14px] w-5"
           iconBgClass="bg-[rgba(37,99,235,0.1)]"
-          badgeLabel="Detected"
+          badgeLabel="Detectat"
           badgeVariant="active"
           value={String(metrics.usersHome)}
-          label="Users Home"
+          label="Acasă acum"
           loading={presence.status === "loading"}
           error={presence.status === "error" ? presence.message : null}
         />

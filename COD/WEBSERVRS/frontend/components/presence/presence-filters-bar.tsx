@@ -25,7 +25,7 @@ export function PresenceFiltersBar({
 }: PresenceFiltersBarProps) {
   return (
     <div className="flex flex-col gap-3 border-b border-[#c3c6d7] bg-[#faf8ff] px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-      <h2 className="text-lg font-semibold leading-7 text-[#191b23]">Activity Log</h2>
+      <h2 className="text-lg font-semibold leading-7 text-[#191b23]">Jurnal activitate</h2>
       <div className="flex flex-wrap items-end gap-2">
         <div className="relative">
           <img
@@ -35,7 +35,7 @@ export function PresenceFiltersBar({
           />
           <input
             type="search"
-            placeholder="Search user..."
+            placeholder="Caută utilizator…"
             value={draft.search}
             onChange={(e) => onChange({ ...draft, search: e.target.value })}
             className="w-48 rounded border border-[#c3c6d7] bg-white py-1.5 pl-8 pr-3 text-sm text-[#191b23] outline-none focus:border-[#004ac6]"
@@ -48,7 +48,7 @@ export function PresenceFiltersBar({
             type="date"
             value={draft.dateFrom}
             onChange={(e) => onChange({ ...draft, dateFrom: e.target.value })}
-            aria-label="From date"
+            aria-label="De la"
             className="rounded border border-[#c3c6d7] bg-white px-2 py-1.5 text-sm text-[#191b23] outline-none focus:border-[#004ac6]"
           />
           <span className="text-[#555f6d]">–</span>
@@ -56,7 +56,7 @@ export function PresenceFiltersBar({
             type="date"
             value={draft.dateTo}
             onChange={(e) => onChange({ ...draft, dateTo: e.target.value })}
-            aria-label="To date"
+            aria-label="Până la"
             className="rounded border border-[#c3c6d7] bg-white px-2 py-1.5 text-sm text-[#191b23] outline-none focus:border-[#004ac6]"
           />
         </div>
@@ -66,10 +66,10 @@ export function PresenceFiltersBar({
             <select
               value={draft.userId}
               onChange={(e) => onChange({ ...draft, userId: e.target.value })}
-              aria-label="User filter"
+              aria-label="Filtru utilizator"
               className="appearance-none rounded border border-[#c3c6d7] bg-white py-1.5 pl-2 pr-8 text-sm text-[#191b23] outline-none focus:border-[#004ac6]"
             >
-              <option value="">All users</option>
+              <option value="">Toți utilizatorii</option>
               {users.map((u) => (
                 <option key={u.id} value={String(u.id)}>
                   {u.first_name} {u.last_name}
@@ -89,7 +89,7 @@ export function PresenceFiltersBar({
           onClick={onApply}
           className="rounded border border-[#c3c6d7] bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[0.6px] text-[#191b23] hover:bg-[#faf8ff]"
         >
-          Apply
+          Aplică
         </button>
       </div>
     </div>

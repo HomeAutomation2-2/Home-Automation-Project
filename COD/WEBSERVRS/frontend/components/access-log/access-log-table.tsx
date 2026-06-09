@@ -15,18 +15,18 @@ export function AccessLogTable({ rows, loading, footer }: AccessLogTableProps) {
         <table className="w-full min-w-[900px] text-left">
           <thead className="border-b border-[#c3c6d7] bg-[#ededf9]">
             <tr className="text-xs font-semibold uppercase tracking-[0.6px] text-[#555f6d]">
-              <th className="px-4 py-2">User Identity</th>
-              <th className="px-4 py-2">Access Point</th>
-              <th className="px-4 py-2">Direction</th>
-              <th className="px-4 py-2">Result</th>
-              <th className="px-4 py-2 text-right">Timestamp</th>
+              <th className="px-4 py-2">Utilizator</th>
+              <th className="px-4 py-2">Punct acces</th>
+              <th className="px-4 py-2">Direcție</th>
+              <th className="px-4 py-2">Rezultat</th>
+              <th className="px-4 py-2 text-right">Data și ora</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
                 <td colSpan={5} className="px-4 py-12 text-center text-sm text-[#555f6d]">
-                  Loading access events…
+                  Se încarcă evenimentele…
                 </td>
               </tr>
             )}
@@ -82,7 +82,7 @@ export function AccessLogTable({ rows, loading, footer }: AccessLogTableProps) {
                           row.direction === "entry" ? "text-[#004ac6]" : "text-[#555f6d]"
                         }`}
                       >
-                        {row.direction === "entry" ? "Entry" : "Exit"}
+                        {row.direction === "entry" ? "Intrare" : "Ieșire"}
                       </span>
                     </div>
                   </td>

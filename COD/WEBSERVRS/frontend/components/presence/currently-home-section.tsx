@@ -7,7 +7,7 @@ type CurrentlyHomeSectionProps = {
 export function CurrentlyHomeSection({ residents }: CurrentlyHomeSectionProps) {
   return (
     <section>
-      <h2 className="text-lg font-semibold leading-7 text-[#191b23]">Currently Home</h2>
+      <h2 className="text-lg font-semibold leading-7 text-[#191b23]">Acasă acum</h2>
       {residents.length === 0 ? (
         <p className="mt-3 text-sm text-[#555f6d]">Nimeni acasă în acest moment.</p>
       ) : (
