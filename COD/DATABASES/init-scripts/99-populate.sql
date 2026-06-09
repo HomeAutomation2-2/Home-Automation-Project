@@ -25,6 +25,16 @@ BEGIN
          '[
            {"days":[1,2,3,4,5,6,7],"slots":[{"time":"00:00","temp":18},{"time":"08:00","temp":"off"},{"time":"22:00","temp":18}]}
          ]'
+        ),
+        (3, 'Away',
+         '[
+           {"days":[1,2,3,4,5,6,7],"slots":[{"time":"00:00","temp":"antifreeze"}]}
+         ]'
+        ),
+        (4, 'Off',
+         '[
+           {"days":[1,2,3,4,5,6,7],"slots":[{"time":"00:00","temp":"off"}]}
+         ]'
         );
     PERFORM setval('temperature_programs_id_seq', 2);
 
