@@ -1,7 +1,5 @@
-export default function LightsStubPage() {
-  return (
-    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-      Lumină — stub. Implementare Figma în Faza 3.
-    </p>
-  );
+import { LightsPageContent } from "@/components/lights/lights-page-content";
+
+export default function LightsPage() {
+  return <LightsPageContent />;
 }

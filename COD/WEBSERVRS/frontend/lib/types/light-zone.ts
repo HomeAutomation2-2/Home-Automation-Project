@@ -3,4 +3,5 @@ export type LightZone = {
   room_id: number;
   name: string;
   is_on: boolean;
+  last_changed_at?: string;
 };
