@@ -10,8 +10,8 @@
 #define SENSOR_ID "ESP01_DHT11_ROOM2"
 
 
-const char *ssid = "NothingHere";
-const char *password = "8689013472";
+const char *ssid = "E22";
+const char *password = "e2200112";
 
 
 DHT dht(DHTPIN, DHTTYPE);

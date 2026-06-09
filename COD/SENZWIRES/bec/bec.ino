@@ -7,8 +7,8 @@
 #define LED_PIN 0
 
 
-const char *ssid = "NothingHere";
-const char *password = "8689013472";
+const char *ssid = "E22";
+const char *password = "e2200112";
 
 
 unsigned long lastPollTime = 0;

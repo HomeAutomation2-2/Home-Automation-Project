@@ -7,8 +7,8 @@
 #define BUTTON_PIN 3
 
 
-const char *ssid = "NothingHere";
-const char *password = "8689013472";
+const char *ssid = "E22";
+const char *password = "e2200112";
 
 bool lastButtonState = HIGH;
 
@@ -79,7 +79,7 @@ void setup()
     while (WiFi.status() != WL_CONNECTED) 
         delay(500);
 
-    MDNS.begin("esp01_button")
+    MDNS.begin("esp01_button");
 
     logToESP32("Button unit booted and connected via DNS Discovery mode.");
 }
