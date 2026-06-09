@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FIGMA_SHELL } from "@/components/shell/figma-shell-assets";
 import { NavIcon } from "@/components/shell/nav-icon";
-import { SIDE_NAV_ITEMS, type NavItemConfig } from "@/lib/nav-config";
+import { SIDE_NAV_ITEMS, isNavItemActive, type NavItemConfig } from "@/lib/nav-config";
 
 const ICON_BOX: Record<string, string> = {
   dashboard: "size-[15px]",
@@ -15,11 +15,6 @@ const ICON_BOX: Record<string, string> = {
   heating: "size-[15px]",
   reports: "size-[15px]",
 };
-
-function isActive(pathname: string, href: string): boolean {
-  if (href === "/dashboard") return pathname === "/dashboard";
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
 
 function NavItem({ item, active }: { item: NavItemConfig; active: boolean }) {
   const src = FIGMA_SHELL.nav[item.iconKey];
@@ -76,7 +71,7 @@ export function SideNav() {
 
       <nav className="relative flex min-h-0 w-full flex-1 flex-col gap-[4px]">
         {SIDE_NAV_ITEMS.map((item) => (
-          <NavItem key={item.id} item={item} active={isActive(pathname, item.href)} />
+          <NavItem key={item.id} item={item} active={isNavItemActive(pathname, item.href)} />
         ))}
       </nav>
     </aside>

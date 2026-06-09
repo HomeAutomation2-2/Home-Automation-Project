@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SIDE_NAV_ITEMS } from "@/lib/nav-config";
+import { SIDE_NAV_ITEMS, isNavItemActive } from "@/lib/nav-config";
 
 /** Mobil: toate linkurile din Figma, inclusiv Users */
 export function MobileNav() {
@@ -11,8 +11,7 @@ export function MobileNav() {
   return (
     <nav className="flex gap-[4px] overflow-x-auto border-b border-solid border-[#c3c6d7] bg-[#faf8ff] px-[8px] py-[8px] md:hidden">
       {SIDE_NAV_ITEMS.map((item) => {
-        const active =
-          pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const active = isNavItemActive(pathname, item.href);
         return (
           <Link
             key={item.id}

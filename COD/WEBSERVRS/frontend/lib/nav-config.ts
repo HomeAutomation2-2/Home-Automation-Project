@@ -37,6 +37,22 @@ export const SIDE_NAV_ITEMS: NavItemConfig[] = [
   { id: "reports", href: "/reports", label: "Reports", iconKey: "reports" },
 ];
 
+/** Sub-rute /reports cu item dedicat în meniu — Reports nu le marchează active */
+const REPORTS_OWNED_BY_OTHER_NAV: readonly string[] = ["/reports/presence"];
+
+/** Un singur item activ: evită Reports + Presence simultan pe /reports/presence */
+export function isNavItemActive(pathname: string, href: string): boolean {
+  if (href === "/dashboard") return pathname === "/dashboard";
+  if (href === "/reports") {
+    if (pathname === "/reports") return true;
+    if (!pathname.startsWith("/reports/")) return false;
+    return !REPORTS_OWNED_BY_OTHER_NAV.some(
+      (owned) => pathname === owned || pathname.startsWith(`${owned}/`),
+    );
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export type PageMeta = {
   /** H2 TopAppBar — 24px bold */
   title: string;
@@ -85,10 +101,7 @@ export function getPageMeta(pathname: string): PageMeta {
     return { title: "Access", crumbs: [{ label: "Access" }] };
   }
   if (pathname.startsWith("/reports/presence")) {
-    return {
-      title: "Presence",
-      crumbs: [{ label: "Reports", href: "/reports" }, { label: "Presence" }],
-    };
+    return { title: "Presence", crumbs: [{ label: "Presence" }] };
   }
   if (pathname.startsWith("/reports")) {
     return { title: "Reports", crumbs: [{ label: "Reports" }] };
