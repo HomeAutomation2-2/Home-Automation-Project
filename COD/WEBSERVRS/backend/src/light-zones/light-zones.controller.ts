@@ -50,7 +50,7 @@ export class LightZonesController
     }
 
     @Post('toggle')
-    @UseGuards(SessionGuard)
+    // @UseGuards(SessionGuard)
     async toggle(@Body('zone_id') zoneId: number) 
     {
         await this.lightZonesService.toggleZone(zoneId)
