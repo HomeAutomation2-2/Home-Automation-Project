@@ -27,9 +27,9 @@ export class DashboardController
 
         try {
             const [rooms_response, zones_response, programs_response] = await Promise.all([
-                fetch(`${authStore.server_url}/rooms`),
-                fetch(`${authStore.server_url}/light-zones`),
-                fetch(`${authStore.server_url}/heating-programs`),
+                api.get(`/rooms`),
+                api.get(`/light-zones`),
+                api.get(`/heating-programs`),
             ])
 
             if (!rooms_response.ok) 
@@ -118,15 +118,9 @@ export class DashboardController
         }
 
         try {
-            const response = await fetch(`${authStore.server_url}/light-zones`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name: name,
-                    room_id: roomId
-                })
+            const response = await api.post("/light-zones", {
+                name: name,
+                room_id: roomId
             })
 
             if (!response.ok) 
