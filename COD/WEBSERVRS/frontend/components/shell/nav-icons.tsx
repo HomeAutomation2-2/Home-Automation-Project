@@ -107,6 +107,15 @@ export function IconHelp(props: IconProps) {
   );
 }
 
+export function IconProfile(props: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden className="size-5" {...props}>
+      <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M4 18c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
 export function IconLogo(props: IconProps) {
   return (
     <svg viewBox="0 0 20 14" fill="none" aria-hidden className="h-[13px] w-[18px]" {...props}>

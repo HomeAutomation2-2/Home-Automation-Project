@@ -11,3 +11,11 @@ export type UserMe = {
   btCodeEpoch: number | null;
   createdAt: string;
 };
+
+/** PATCH /users/me */
+export type UpdateProfileRequest = {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  password_plaintext?: string;
+};

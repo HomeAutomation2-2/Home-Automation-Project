@@ -1,32 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { ProfilePersonalSection } from "@/components/profile/profile-personal-section";
+import { ProfileSectionCard } from "@/components/profile/profile-section-card";
+import { ProfileSummaryCard } from "@/components/profile/profile-summary-card";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
-import { PageHeader } from "@/components/admin/page-header";
-import { StatusBadge } from "@/components/admin/status-badge";
 import { useAuth } from "@/hooks/useAuth";
-
-function ProfileField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between border-t border-[#c3c6d7] py-3 first:border-t-0">
-      <span className="text-[13px] text-[#555f6d]">{label}</span>
-      <span className="text-[13px] font-semibold text-[#191b23]">{value}</span>
-    </div>
-  );
-}
 
 export function ProfilePageContent() {
   const { user, isLoading, error, logout, refreshProfile } = useAuth();
   const [confirmLogout, setConfirmLogout] = useState(false);
-
-  if (isLoading) {
-    return <p className="text-sm text-[#555f6d]">Se încarcă profilul…</p>;
-  }
-
-  const initials = user
-    ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
-    : "?";
 
   async function handleLogout() {
     if (!confirmLogout) {
@@ -36,80 +19,102 @@ export function ProfilePageContent() {
     await logout();
   }
 
+  if (isLoading) {
+    return (
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6">
+        <div className="h-8 w-48 animate-pulse rounded bg-[#e8e9f0]" aria-hidden />
+        <div className="grid gap-6 lg:grid-cols-12">
+          <div className="h-[269px] animate-pulse rounded bg-[#e8e9f0] lg:col-span-4" />
+          <div className="h-[320px] animate-pulse rounded bg-[#e8e9f0] lg:col-span-8" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-3xl">
-      <PageHeader
-        title="Profil utilizator"
-        crumbs={[{ label: "Profil" }]}
-      />
+    <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-[-0.24px] text-[#191b23]">
+          Profil utilizator
+        </h1>
+      </header>
 
       {error && <ErrorBanner message={error} />}
 
       {user ? (
-        <div className="grid gap-6 md:grid-cols-[240px_1fr]">
-          <div className="flex flex-col items-center rounded-lg border border-[#c3c6d7] bg-[#faf8ff] p-6">
-            <div className="flex size-24 items-center justify-center rounded-xl border-2 border-[#e1e2ed] bg-white text-2xl font-semibold text-[#004ac6]">
-              {initials}
-            </div>
-            <p className="mt-4 text-lg font-semibold text-[#191b23]">
-              {user.firstName} {user.lastName}
-            </p>
-            <p className="mt-1 text-[13px] text-[#555f6d]">{user.phone}</p>
-            <div className="mt-4">
-              <StatusBadge active={!user.isSuspended} suspended={user.isSuspended} />
-            </div>
+        <div className="grid gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <ProfileSummaryCard user={user} />
           </div>
 
-          <div className="rounded-lg border border-[#c3c6d7] bg-[#faf8ff] p-6">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-[#555f6d]">
-              Informații cont
-            </h2>
-            <div className="mt-4">
-              <ProfileField
-                label="Rol"
-                value={user.isAdmin ? "Administrator" : "Utilizator"}
-              />
-              <ProfileField label="Telefon" value={user.phone} />
-              <ProfileField label="CNP" value={user.cnp} />
-              <ProfileField label="Prezență acasă" value={user.isHome ? "Da" : "Nu"} />
-              <ProfileField
-                label="Cont suspendat"
-                value={user.isSuspended ? "Da" : "Nu"}
-              />
-            </div>
+          <div className="flex flex-col gap-6 lg:col-span-8">
+            <ProfilePersonalSection
+              user={user}
+              onSaved={refreshProfile}
+            />
 
-            <p className="mt-6 text-xs text-[#737686]">
-              Token-ul de sesiune nu este afișat din motive de securitate.
-            </p>
+            <ProfileSectionCard title="Cont și sesiune">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-[#191b23]">Prezență acasă</p>
+                    <p className="text-[13px] text-[#555f6d]">
+                      Stare raportată de sistemul de acces.
+                    </p>
+                  </div>
+                  <span className="text-[13px] font-semibold text-[#434655]">
+                    {user.isHome ? "Acasă" : "Plecat"}
+                  </span>
+                </div>
+
+                <div className="h-px bg-[#c3c6d7]" />
+
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-[#191b23]">Deconectare</p>
+                    <p className="text-[13px] text-[#555f6d]">
+                      Încheie sesiunea curentă pe acest dispozitiv.
+                    </p>
+                  </div>
+                  {confirmLogout ? (
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmLogout(false)}
+                        className="rounded border border-[#c3c6d7] bg-[#faf8ff] px-[25px] py-[9px] text-xs font-semibold uppercase tracking-[0.6px] text-[#191b23] hover:bg-white"
+                      >
+                        Anulează
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleLogout()}
+                        className="rounded bg-[#b42318] px-6 py-[9px] text-xs font-semibold uppercase tracking-[0.6px] text-white shadow-[0px_1px_1px_rgba(0,0,0,0.05)] hover:bg-[#912018]"
+                      >
+                        Confirmă
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void handleLogout()}
+                      className="rounded border border-[#c3c6d7] bg-[#faf8ff] px-[25px] py-[9px] text-xs font-semibold uppercase tracking-[0.6px] text-[#191b23] hover:bg-white"
+                    >
+                      Deconectare
+                    </button>
+                  )}
+                </div>
+
+                {confirmLogout && (
+                  <p className="text-xs text-[#555f6d]">
+                    Confirmă pentru a te redirecționa la pagina de autentificare.
+                  </p>
+                )}
+              </div>
+            </ProfileSectionCard>
           </div>
         </div>
       ) : (
         <p className="text-sm text-[#555f6d]">Profil indisponibil.</p>
-      )}
-
-      <div className="mt-8 flex flex-wrap justify-end gap-3">
-        <Button type="button" variant="secondary" onClick={() => void refreshProfile()}>
-          Reîncarcă datele
-        </Button>
-        {confirmLogout ? (
-          <>
-            <Button type="button" variant="secondary" onClick={() => setConfirmLogout(false)}>
-              Anulează
-            </Button>
-            <Button type="button" variant="danger" onClick={() => void handleLogout()}>
-              Confirmă deconectarea
-            </Button>
-          </>
-        ) : (
-          <Button type="button" variant="danger" onClick={() => void handleLogout()}>
-            Deconectare
-          </Button>
-        )}
-      </div>
-      {confirmLogout && (
-        <p className="mt-2 text-right text-xs text-[#555f6d]">
-          Apasă din nou pentru a confirma deconectarea.
-        </p>
       )}
     </div>
   );

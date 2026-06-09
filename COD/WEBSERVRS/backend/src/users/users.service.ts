@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException, Session, UnauthorizedException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import type { DeviceBindingStatusDto, InitiateDeviceBindingDto } from './dto/device-binding.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -327,6 +328,17 @@ export class UsersService
         await this.user_repository.save(user);
 
         return this.getDetailedProfileForAdmin(userId);
+    }
+
+    async updateOwnProfile(userId: number, dto: UpdateProfileDto) 
+    {
+        await this.updateUser(userId, dto);
+
+        const user = await this.user_repository.findOne({ where: { id: userId } });
+        if (!user) throw new NotFoundException('User not found');
+
+        const { passwordHash, sessions, btCodeHash, ...safeUser } = user;
+        return safeUser;
     }
 
     async getDeviceBinding(userId: number): Promise<DeviceBindingStatusDto> 

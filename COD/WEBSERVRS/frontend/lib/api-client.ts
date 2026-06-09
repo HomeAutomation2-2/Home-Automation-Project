@@ -4,7 +4,7 @@ import type { LightZone } from "@/lib/types/light-zone";
 import type { UnifiedLog } from "@/lib/types/log";
 import type { Room } from "@/lib/types/room";
 import type { TempProgram } from "@/lib/types/temp-program";
-import type { UserMe } from "@/lib/types/user-me";
+import type { UserMe, UpdateProfileRequest } from "@/lib/types/user-me";
 import type {
   AdminUserDetail,
   CreateUserRequest,
@@ -55,6 +55,14 @@ export class ApiClient {
   /** GET /users/me */
   async getMe(): Promise<UserMe> {
     return this.request<UserMe>("/users/me");
+  }
+
+  /** PATCH /users/me */
+  async updateMe(body: UpdateProfileRequest): Promise<UserMe> {
+    return this.request<UserMe>("/users/me", {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
   }
 
   /** GET /users/presence */

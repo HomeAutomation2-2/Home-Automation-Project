@@ -197,7 +197,7 @@ export function getPageMeta(pathname: string): PageMeta {
   }
 
   if (pathname === "/profile") {
-    return { title: "Profil", crumbs: [{ label: "Cont" }] };
+    return { title: "Profil", crumbs: [{ label: "Utilizatori" }, { label: "Profil" }] };
   }
 
   return { title: "Prezentare", crumbs: [{ label: "Acasă" }] };

@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { SessionGuard } from './guards/session.guard';
 import { GetUser } from './decorators/get-user.decorator';
 import { User } from './entities/user.entity';
@@ -45,6 +46,13 @@ export class UsersController
         const { passwordHash, sessions, btCodeHash, ...safeUser } = user;
         
         return safeUser;
+    }
+
+    @Patch('me')
+    @UseGuards(SessionGuard)
+    async updateMe(@GetUser() user: User, @Body() body: UpdateProfileDto) 
+    {
+        return this.usersService.updateOwnProfile(user.id, body);
     }
 
     /**
