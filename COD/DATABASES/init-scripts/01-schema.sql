@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
     is_admin      BOOLEAN      NOT NULL DEFAULT false,
     is_suspended  BOOLEAN      NOT NULL DEFAULT false,
     is_home       BOOLEAN      NOT NULL DEFAULT false,
+    is_child      BOOLEAN      NOT NULL DEFAULT false,
+    allow_return_after_midnight BOOLEAN NOT NULL DEFAULT false,
     bt_code_hash  VARCHAR(255),
     bt_code_epoch INT,
     created_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
@@ -74,11 +76,24 @@ CREATE TABLE IF NOT EXISTS boiler_events (
 );
 
 CREATE TABLE IF NOT EXISTS home_settings (
+    id                  SERIAL       PRIMARY KEY,
+    hysteresis          DECIMAL(4,2) NOT NULL,
+    antifreeze_temp     DECIMAL(4,2) NOT NULL,
+    sampling_period     INT          NOT NULL,
+    boiler_state        BOOLEAN      NOT NULL,
+    fire_alert_celsius  DECIMAL(4,2) NOT NULL DEFAULT 45.00
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
     id              SERIAL       PRIMARY KEY,
-    hysteresis      DECIMAL(4,2) NOT NULL,
-    antifreeze_temp DECIMAL(4,2) NOT NULL,
-    sampling_period INT		 NOT NULL,
-    boiler_state    BOOLEAN      NOT NULL
+    type            VARCHAR(50)  NOT NULL,
+    severity        VARCHAR(20)  NOT NULL DEFAULT 'warning',
+    title           VARCHAR(200) NOT NULL,
+    message         TEXT         NOT NULL,
+    related_user_id INT          REFERENCES users(id) ON DELETE SET NULL,
+    related_room_id INT          REFERENCES rooms(id) ON DELETE SET NULL,
+    is_read         BOOLEAN      NOT NULL DEFAULT false,
+    created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS devices (
