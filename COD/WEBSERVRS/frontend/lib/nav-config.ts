@@ -5,7 +5,8 @@ export type NavIconKey =
   | "presence"
   | "lighting"
   | "heating"
-  | "reports";
+  | "reports"
+  | "settings";
 
 export type NavItemConfig = {
   id: string;
@@ -54,6 +55,14 @@ export const SIDE_NAV_ITEMS: NavItemConfig[] = [
   { id: "heating", href: "/heating", label: "Încălzire", iconKey: "heating" },
 
   { id: "reports", href: "/reports", label: "Rapoarte", iconKey: "reports" },
+
+  {
+    id: "settings",
+    href: "/admin/settings",
+    label: "Setări",
+    iconKey: "settings",
+    adminOnly: true,
+  },
 ];
 
 /** Sub-rute /reports cu item dedicat în meniu — Reports nu le marchează active */
@@ -85,6 +94,13 @@ export type PageMeta = {
 export function getPageMeta(pathname: string): PageMeta {
   if (pathname === "/dashboard") {
     return { title: "Prezentare generală", crumbs: [{ label: "Prezentare" }] };
+  }
+
+  if (pathname === "/admin/settings") {
+    return {
+      title: "Setări casă",
+      crumbs: [{ label: "Setări" }],
+    };
   }
 
   if (pathname.startsWith("/admin/users")) {

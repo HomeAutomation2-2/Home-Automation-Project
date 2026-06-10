@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconProfile } from "@/components/shell/nav-icons";
 import { FIGMA_SHELL } from "@/components/shell/figma-shell-assets";
-import { logout } from "@/lib/auth";
+import { isAdmin, logout } from "@/lib/auth";
 import { getPageMeta } from "@/lib/nav-config";
+import { NotificationBell } from "@/components/shell/notification-bell";
 
 function FigmaIconButton({
   src,
@@ -28,7 +29,9 @@ function FigmaIconButton({
       title={label}
       onClick={onClick}
     >
-      <div className={`pointer-events-none relative shrink-0 ${height} ${width}`}>
+      <div
+        className={`pointer-events-none relative shrink-0 ${height} ${width}`}
+      >
         <img alt="" className="block h-full w-full max-w-none" src={src} />
       </div>
     </button>
@@ -50,7 +53,10 @@ export function TopAppBar() {
         {crumbs.length > 0 && (
           <div className="flex w-full flex-wrap content-stretch items-center gap-[4px]">
             {crumbs.map((crumb, index) => (
-              <span key={`${crumb.label}-${index}`} className="flex items-center gap-[4px]">
+              <span
+                key={`${crumb.label}-${index}`}
+                className="flex items-center gap-[4px]"
+              >
                 {index > 0 && (
                   <span className="relative mx-0.5 h-[8px] w-[4.933px] shrink-0">
                     <img
@@ -79,6 +85,7 @@ export function TopAppBar() {
       </div>
 
       <div className="relative z-10 flex shrink-0 items-center gap-[4px]">
+        {isAdmin() && <NotificationBell />}
         <Link
           href="/profile"
           aria-label="Profil"
@@ -96,11 +103,7 @@ export function TopAppBar() {
           height="h-[20px]"
           label="Ajutor"
           onClick={() =>
-            window.open(
-              "https://github.com",
-              "_blank",
-              "noopener,noreferrer",
-            )
+            window.open("https://github.com", "_blank", "noopener,noreferrer")
           }
         />
         <div className="mx-1 h-[24px] w-px shrink-0 bg-[#c3c6d7]" aria-hidden />

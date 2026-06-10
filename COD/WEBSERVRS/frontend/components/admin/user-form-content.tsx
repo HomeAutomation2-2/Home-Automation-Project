@@ -37,6 +37,8 @@ export function UserFormContent({ mode, userId }: UserFormContentProps) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [isAdminRole, setIsAdminRole] = useState(false);
+  const [isChild, setIsChild] = useState(false);
+  const [allowReturnAfterMidnight, setAllowReturnAfterMidnight] = useState(false);
   const [detail, setDetail] = useState<AdminUserDetail | null>(null);
   const [loading, setLoading] = useState(!isCreate);
   const [submitting, setSubmitting] = useState(false);
@@ -60,6 +62,8 @@ export function UserFormContent({ mode, userId }: UserFormContentProps) {
           setCnp(data.cnp);
           setPhone(data.phone);
           setIsAdminRole(data.is_admin);
+          setIsChild(data.is_child);
+          setAllowReturnAfterMidnight(data.allow_return_after_midnight);
         }
       } catch (err) {
         if (!cancelled) {
@@ -112,6 +116,8 @@ export function UserFormContent({ mode, userId }: UserFormContentProps) {
           phone: phone.trim(),
           password_plaintext: password,
           isAdmin: isAdminRole,
+          isChild,
+          allowReturnAfterMidnight: isChild ? allowReturnAfterMidnight : false,
         };
         await getApiClient().registerUser(body);
       } else if (userId !== undefined) {
@@ -120,6 +126,8 @@ export function UserFormContent({ mode, userId }: UserFormContentProps) {
           lastName: lastName.trim(),
           phone: phone.trim(),
           isAdmin: isAdminRole,
+          isChild,
+          allowReturnAfterMidnight: isChild ? allowReturnAfterMidnight : false,
         };
         if (password.length >= 6) {
           body.password_plaintext = password;
@@ -282,6 +290,29 @@ export function UserFormContent({ mode, userId }: UserFormContentProps) {
               Rol administrator
               {!isCreate && <RoleBadge isAdmin={isAdminRole} />}
             </label>
+            <label className="flex items-center gap-3 text-sm text-[#191b23]">
+              <input
+                type="checkbox"
+                checked={isChild}
+                onChange={(e) => {
+                  setIsChild(e.target.checked);
+                  if (!e.target.checked) setAllowReturnAfterMidnight(false);
+                }}
+                className="size-4 rounded border-[#c3c6d7]"
+              />
+              Cont copil (monitorizare oră întoarcere)
+            </label>
+            {isChild && (
+              <label className="ml-7 flex items-center gap-3 text-sm text-[#191b23]">
+                <input
+                  type="checkbox"
+                  checked={allowReturnAfterMidnight}
+                  onChange={(e) => setAllowReturnAfterMidnight(e.target.checked)}
+                  className="size-4 rounded border-[#c3c6d7]"
+                />
+                Permis să intre după 00:00 (fără notificare)
+              </label>
+            )}
             <FigmaField
               label={isCreate ? "Parolă inițială" : "Parolă nouă (opțional)"}
               name="password"

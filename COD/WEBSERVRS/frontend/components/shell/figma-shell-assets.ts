@@ -18,6 +18,8 @@ export const FIGMA_SHELL = {
       "https://www.figma.com/api/mcp/asset/dee610fc-fbbe-447b-b810-528f29595317",
     reports:
       "https://www.figma.com/api/mcp/asset/213939a5-730c-416c-b00d-3c049202eaf9",
+    settings:
+      "https://www.figma.com/api/mcp/asset/d4d2dd67-81c8-4528-a3ab-8fd00c98c5b7",
   },
   topBar: {
     bell: "https://www.figma.com/api/mcp/asset/d8e166c2-ebde-4c6c-923f-9eb3150dc86e",

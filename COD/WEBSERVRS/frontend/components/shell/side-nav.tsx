@@ -4,7 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FIGMA_SHELL } from "@/components/shell/figma-shell-assets";
 import { NavIcon } from "@/components/shell/nav-icon";
-import { SIDE_NAV_ITEMS, isNavItemActive, type NavItemConfig } from "@/lib/nav-config";
+import {
+  SIDE_NAV_ITEMS,
+  isNavItemActive,
+  type NavItemConfig,
+} from "@/lib/nav-config";
+import { isAdmin } from "@/lib/auth";
 
 const ICON_BOX: Record<string, string> = {
   dashboard: "size-[15px]",
@@ -14,6 +19,7 @@ const ICON_BOX: Record<string, string> = {
   lighting: "h-[16.667px] w-[12.5px]",
   heating: "size-[15px]",
   reports: "size-[15px]",
+  settings: "size-[15px]",
 };
 
 function NavItem({ item, active }: { item: NavItemConfig; active: boolean }) {
@@ -25,11 +31,17 @@ function NavItem({ item, active }: { item: NavItemConfig; active: boolean }) {
     : "group relative flex w-full shrink-0 cursor-pointer content-stretch items-center gap-[8px] px-[16px] py-[8px] hover:bg-[rgba(37,99,235,0.06)]";
 
   return (
-    <Link href={item.href} className={linkClass} aria-current={active ? "page" : undefined}>
+    <Link
+      href={item.href}
+      className={linkClass}
+      aria-current={active ? "page" : undefined}
+    >
       <NavIcon src={src} className={iconBox} active={active} />
       <span
         className={`text-[16px] font-normal leading-[18px] ${
-          active ? "text-[#004ac6]" : "text-[#555f6d] group-hover:text-[#434655]"
+          active
+            ? "text-[#004ac6]"
+            : "text-[#555f6d] group-hover:text-[#434655]"
         }`}
       >
         {item.label}
@@ -70,9 +82,15 @@ export function SideNav() {
       </div>
 
       <nav className="relative flex min-h-0 w-full flex-1 flex-col gap-[4px]">
-        {SIDE_NAV_ITEMS.map((item) => (
-          <NavItem key={item.id} item={item} active={isNavItemActive(pathname, item.href)} />
-        ))}
+        {SIDE_NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin()).map(
+          (item) => (
+            <NavItem
+              key={item.id}
+              item={item}
+              active={isNavItemActive(pathname, item.href)}
+            />
+          ),
+        )}
       </nav>
     </aside>
   );

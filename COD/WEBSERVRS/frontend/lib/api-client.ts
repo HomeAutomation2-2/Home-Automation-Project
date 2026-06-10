@@ -12,6 +12,8 @@ import type {
   UpdateUserRequest,
 } from "@/lib/types/admin-user";
 import type { UserPresenceItem } from "@/lib/types/user-presence";
+import type { NotificationsResponse } from "@/lib/types/notification";
+import type { HomeSettings, UpdateHomeSettingsRequest } from "@/lib/types/home-settings";
 
 type NestErrorBody = {
   message?: string | string[];
@@ -205,6 +207,37 @@ export class ApiClient {
   async suspendUser(id: number): Promise<SuspendUserResponse> {
     return this.request<SuspendUserResponse>(`/users/${id}/suspend`, {
       method: "PATCH",
+    });
+  }
+
+  /** GET /notifications (admin) */
+  async getNotifications(unreadOnly = false): Promise<NotificationsResponse> {
+    const query = unreadOnly ? "?unread_only=true" : "";
+    return this.request<NotificationsResponse>(`/notifications${query}`);
+  }
+
+  /** PATCH /notifications/:id/read (admin) */
+  async markNotificationRead(id: number): Promise<void> {
+    await this.request(`/notifications/${id}/read`, { method: "PATCH" });
+  }
+
+  /** PATCH /notifications/read-all (admin) */
+  async markAllNotificationsRead(): Promise<{ updated: number }> {
+    return this.request<{ updated: number }>("/notifications/read-all", {
+      method: "PATCH",
+    });
+  }
+
+  /** GET /home-settings */
+  async getHomeSettings(): Promise<HomeSettings> {
+    return this.request<HomeSettings>("/home-settings");
+  }
+
+  /** PATCH /home-settings (admin) */
+  async updateHomeSettings(body: UpdateHomeSettingsRequest): Promise<HomeSettings> {
+    return this.request<HomeSettings>("/home-settings", {
+      method: "PATCH",
+      body: JSON.stringify(body),
     });
   }
 

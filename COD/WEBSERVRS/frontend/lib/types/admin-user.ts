@@ -6,6 +6,8 @@ export type CreateUserRequest = {
   phone: string;
   password_plaintext: string;
   isAdmin: boolean;
+  isChild?: boolean;
+  allowReturnAfterMidnight?: boolean;
 };
 
 /** GET /users/:id (admin) — snake_case din users.service */
@@ -17,6 +19,8 @@ export type AdminUserDetail = {
   is_home: boolean;
   is_admin: boolean;
   is_suspended: boolean;
+  is_child: boolean;
+  allow_return_after_midnight: boolean;
 };
 
 /** PATCH /users/:id */
@@ -25,6 +29,8 @@ export type UpdateUserRequest = {
   lastName?: string;
   phone?: string;
   isAdmin?: boolean;
+  isChild?: boolean;
+  allowReturnAfterMidnight?: boolean;
   password_plaintext?: string;
 };
 
