@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { FIGMA_DASHBOARD } from "@/components/dashboard/figma-dashboard-assets";
+import {
+  IconAvgTemp,
+  IconRoomsOn,
+  IconUsersHome,
+} from "@/components/dashboard/dashboard-icons";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { RecentAccessTable } from "@/components/dashboard/recent-access-table";
 import { SystemStatusBanner } from "@/components/dashboard/system-status-banner";
@@ -96,8 +100,7 @@ export function DashboardPageContent() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <MetricCard
-          iconSrc={FIGMA_DASHBOARD.iconRoomsOn}
-          iconBoxClass="h-5 w-[15px]"
+          icon={<IconRoomsOn className="text-[#004ac6]" />}
           iconBgClass="bg-[rgba(37,99,235,0.1)]"
           badgeLabel="Activ"
           badgeVariant="active"
@@ -107,8 +110,7 @@ export function DashboardPageContent() {
           error={lights.status === "error" ? lights.message : null}
         />
         <MetricCard
-          iconSrc={FIGMA_DASHBOARD.iconAvgTemp}
-          iconBoxClass="size-[18px]"
+          icon={<IconAvgTemp className="text-[#555f6d]" />}
           iconBgClass="bg-[#e1e2ed]"
           badgeLabel="Normal"
           badgeVariant="neutral"
@@ -118,8 +120,7 @@ export function DashboardPageContent() {
           error={rooms.status === "error" ? rooms.message : null}
         />
         <MetricCard
-          iconSrc={FIGMA_DASHBOARD.iconUsersHome}
-          iconBoxClass="h-[14px] w-5"
+          icon={<IconUsersHome className="text-[#004ac6]" />}
           iconBgClass="bg-[rgba(37,99,235,0.1)]"
           badgeLabel="Detectat"
           badgeVariant="active"

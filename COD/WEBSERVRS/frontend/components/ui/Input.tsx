@@ -9,7 +9,8 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 const variantClasses: Record<NonNullable<InputProps["variant"]>, string> = {
   default:
     "rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-100",
-  auth: "rounded-2xl border border-[var(--ha-lowered-border)] bg-[var(--ha-lowered)] px-4 py-3 text-[var(--ha-text)] outline-none focus:border-[var(--ha-text-primary)] focus:ring-1 focus:ring-[var(--ha-text-primary)]",
+  auth:
+    "rounded-2xl border border-ha-lowered-border bg-ha-lowered px-4 py-3 text-foreground outline-none focus:border-ha-primary focus:ring-1 focus:ring-ha-primary",
 };
 
 export function Input({
@@ -26,7 +27,7 @@ export function Input({
     <div className="flex flex-col gap-1 self-stretch">
       <label
         htmlFor={inputId}
-        className="pl-2 text-sm font-medium text-[var(--ha-text)]"
+        className="pl-2 text-sm font-medium text-foreground"
       >
         {label}
       </label>
@@ -34,13 +35,13 @@ export function Input({
         id={inputId}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${inputId}-error` : undefined}
-        className={`${variantClasses[variant]} ${error ? "border-[var(--ha-red-text)]" : ""} ${className}`}
+        className={`${variantClasses[variant]} ${error ? "border-ha-red" : ""} ${className}`}
         {...props}
       />
       {error && (
         <span
           id={`${inputId}-error`}
-          className="pl-2 text-xs text-[var(--ha-red-text)]"
+          className="pl-2 text-xs text-ha-red"
           role="alert"
         >
           {error}

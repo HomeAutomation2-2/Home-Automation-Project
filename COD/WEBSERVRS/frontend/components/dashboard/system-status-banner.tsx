@@ -1,4 +1,4 @@
-import { FIGMA_DASHBOARD } from "@/components/dashboard/figma-dashboard-assets";
+import { IconSystemCheck } from "@/components/dashboard/dashboard-icons";
 
 type SystemStatusBannerProps = {
   online: boolean;
@@ -32,11 +32,7 @@ export function SystemStatusBanner({
     <div className="flex items-center justify-between rounded-lg border border-[#c3c6d7] bg-white py-[17px] pl-[17px] pr-[17px] shadow-[0px_1px_1px_rgba(0,0,0,0.05)]">
       <div className="flex items-center gap-6">
         <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[rgba(37,99,235,0.1)]">
-          <img
-            alt=""
-            src={FIGMA_DASHBOARD.systemCheck}
-            className="size-[23px] max-w-none"
-          />
+          <IconSystemCheck className="text-[#004ac6]" />
         </div>
         <div>
           <h2 className="text-lg font-semibold leading-7 text-[#191b23]">

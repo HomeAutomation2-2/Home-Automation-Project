@@ -1,8 +1,8 @@
+import type { ReactNode } from "react";
 import { MetricBadge } from "@/components/dashboard/metric-badge";
 
 type MetricCardProps = {
-  iconSrc: string;
-  iconBoxClass: string;
+  icon: ReactNode;
   iconBgClass: string;
   badgeLabel: string;
   badgeVariant: "active" | "neutral";
@@ -25,8 +25,7 @@ function MetricSkeleton() {
 }
 
 export function MetricCard({
-  iconSrc,
-  iconBoxClass,
+  icon,
   iconBgClass,
   badgeLabel,
   badgeVariant,
@@ -47,7 +46,7 @@ export function MetricCard({
             <div
               className={`flex size-10 items-center justify-center rounded-xl ${iconBgClass}`}
             >
-              <img alt="" src={iconSrc} className={`max-w-none ${iconBoxClass}`} />
+              {icon}
             </div>
             <MetricBadge label={badgeLabel} variant={badgeVariant} />
           </div>

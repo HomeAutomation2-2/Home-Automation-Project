@@ -2,7 +2,7 @@
 
 #define WIFI_SSID      "E22"
 #define WIFI_PASS      "e2200112"
-#define SERVER_URL     "http://10.107.24.241:3000"
+#define SERVER_URL     "http://10.254.15.251:3090"
 #define DEVICE_SECRET  "secret"
 #define MAX_USERS   20
 #define ROOM_COUNT  2

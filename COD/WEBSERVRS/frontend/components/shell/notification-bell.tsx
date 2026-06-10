@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FIGMA_SHELL } from "@/components/shell/figma-shell-assets";
+import { IconBell } from "@/components/shell/nav-icons";
 import { getApiClient } from "@/lib/auth";
 import type { NotificationItem } from "@/lib/types/notification";
 
@@ -80,9 +80,7 @@ export function NotificationBell() {
         title="Notificări"
         onClick={() => setOpen((prev) => !prev)}
       >
-        <div className="pointer-events-none relative h-[20px] w-[17.5px] shrink-0">
-          <img alt="" className="block h-full w-full max-w-none" src={FIGMA_SHELL.topBar.bell} />
-        </div>
+        <IconBell className="text-[#555f6d]" />
         {unreadCount > 0 && (
           <span className="absolute right-[6px] top-[6px] flex size-[16px] items-center justify-center rounded-full bg-[#b42318] text-[10px] font-semibold text-white">
             {unreadCount > 9 ? "9+" : unreadCount}

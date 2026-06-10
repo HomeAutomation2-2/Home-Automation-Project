@@ -1,4 +1,8 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+
+@source "../components/**/*.{ts,tsx}";
+@source "../app/**/*.{ts,tsx}";
+@source "../lib/**/*.{ts,tsx}";
 
 /* Aliniat la SMARTPON / Figma Home Automation */
 :root {
@@ -22,12 +26,19 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-ha-primary: var(--ha-text-primary);
+  --color-ha-inverted: var(--ha-text-inverted);
   --color-ha-base: var(--ha-base);
   --color-ha-raised: var(--ha-raised);
+  --color-ha-raised-border: var(--ha-raised-border);
   --color-ha-lowered: var(--ha-lowered);
+  --color-ha-lowered-border: var(--ha-lowered-border);
   --color-ha-text-secondary: var(--ha-text-secondary);
+  --color-ha-red: var(--ha-red-text);
+  --color-ha-red-bg: var(--ha-red-bg);
+  --color-ha-red-border: var(--ha-red-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-inter: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {

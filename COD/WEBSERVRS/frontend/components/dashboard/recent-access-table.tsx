@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FIGMA_DASHBOARD } from "@/components/dashboard/figma-dashboard-assets";
+import { IconEntry, IconExit } from "@/components/dashboard/dashboard-icons";
 import { parseAccessLogEntry } from "@/lib/access-log/parse-access-log";
 import type { DataState } from "@/lib/dashboard/load-state";
 import type { UnifiedLog } from "@/lib/types/log";
@@ -83,15 +83,11 @@ export function RecentAccessTable({ state }: RecentAccessTableProps) {
                     {row.timestampLabel}
                   </span>
                   <div className="flex items-center gap-1 px-4 py-3">
-                    <img
-                      alt=""
-                      src={
-                        row.direction === "entry"
-                          ? FIGMA_DASHBOARD.iconEntry
-                          : FIGMA_DASHBOARD.iconExit
-                      }
-                      className="size-3 max-w-none"
-                    />
+                    {row.direction === "entry" ? (
+                      <IconEntry className="text-[#004ac6]" />
+                    ) : (
+                      <IconExit className="text-[#555f6d]" />
+                    )}
                     <span
                       className={`text-[13px] leading-4 ${
                         row.direction === "entry" ? "text-[#004ac6]" : "text-[#555f6d]"
