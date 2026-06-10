@@ -40,6 +40,7 @@ export function UserFormContent({ mode, userId }: UserFormContentProps) {
   const [detail, setDetail] = useState<AdminUserDetail | null>(null);
   const [loading, setLoading] = useState(!isCreate);
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [bannerError, setBannerError] = useState<string | null>(null);
 
@@ -142,6 +143,30 @@ export function UserFormContent({ mode, userId }: UserFormContentProps) {
       }
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (userId === undefined || Number.isNaN(userId)) return;
+    if (
+      !window.confirm(
+        "Ștergi definitiv acest utilizator? Acțiunea nu poate fi anulată.",
+      )
+    ) {
+      return;
+    }
+
+    setDeleting(true);
+    setBannerError(null);
+    try {
+      await getApiClient().deleteUser(userId);
+      router.push("/admin/users");
+    } catch (err) {
+      setBannerError(
+        err instanceof ApiError ? err.message : "Utilizatorul nu a putut fi șters.",
+      );
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -277,33 +302,36 @@ export function UserFormContent({ mode, userId }: UserFormContentProps) {
           </div>
         </section>
 
-        {!isCreate && userId !== undefined && (
-          <div className="flex gap-3">
-            <Link href={`/admin/users/${userId}/device`}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {!isCreate && userId !== undefined && (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={deleting || submitting}
+              onClick={() => void handleDelete()}
+              className="!border-[#b42318] !text-[#b42318] hover:!bg-[#fef3f2]"
+            >
+              {deleting ? "Se șterge…" : "Șterge utilizatorul"}
+            </Button>
+          )}
+          <div className="ml-auto flex gap-3">
+            <Link href="/admin/users">
               <Button type="button" variant="secondary">
-                Asociere telefon
+                Anulează
               </Button>
             </Link>
-          </div>
-        )}
-
-        <div className="flex justify-end gap-3">
-          <Link href="/admin/users">
-            <Button type="button" variant="secondary">
-              Anulează
+            <Button
+              type="submit"
+              disabled={submitting || deleting}
+              className="!bg-[#004ac6] !text-white hover:!opacity-90"
+            >
+              {submitting
+                ? "Se salvează…"
+                : isCreate
+                  ? "Salvează utilizatorul"
+                  : "Salvează modificările"}
             </Button>
-          </Link>
-          <Button
-            type="submit"
-            disabled={submitting}
-            className="!bg-[#004ac6] !text-white hover:!opacity-90"
-          >
-            {submitting
-              ? "Se salvează…"
-              : isCreate
-                ? "Salvează utilizatorul"
-                : "Salvează modificările"}
-          </Button>
+          </div>
         </div>
       </form>
     </AdminGuard>

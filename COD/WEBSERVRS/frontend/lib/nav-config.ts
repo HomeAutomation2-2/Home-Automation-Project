@@ -100,18 +100,6 @@ export function getPageMeta(pathname: string): PageMeta {
       };
     }
 
-    if (pathname.includes("/device")) {
-      return {
-        title: "Asociere dispozitiv",
-
-        crumbs: [
-          { label: "Utilizatori", href: "/admin/users" },
-
-          { label: "Asociere" },
-        ],
-      };
-    }
-
     if (pathname.match(/\/admin\/users\/\d+$/)) {
       return {
         title: "Editare utilizator",
@@ -161,14 +149,6 @@ export function getPageMeta(pathname: string): PageMeta {
         { label: "Rapoarte", href: "/reports" },
         { label: "Temperaturi" },
       ],
-    };
-  }
-
-  if (pathname.startsWith("/heating/override")) {
-    return {
-      title: "Încălzire",
-
-      crumbs: [{ label: "Încălzire", href: "/heating" }, { label: "Forțare" }],
     };
   }
 

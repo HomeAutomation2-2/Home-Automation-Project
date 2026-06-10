@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, Logger, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { LoginUserDto } from './dto/login-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { SessionGuard } from './guards/session.guard';
 import { GetUser } from './decorators/get-user.decorator';
 import { User } from './entities/user.entity';
@@ -47,6 +48,16 @@ export class UsersController
         await this.usersService.updateIsHome(user.id, isHome)
     }
 
+
+    @Patch('me')
+    @UseGuards(SessionGuard)
+    async updateMe(
+        @Body() data: UpdateProfileDto,
+        @GetUser() user: User,
+    ) {
+        return this.usersService.updateProfile(user.id, data)
+    }
+
     
     /**
      * Get the info of all users on the server.
@@ -81,6 +92,16 @@ export class UsersController
     async getUserDetailsForAdmin(@Param('id', ParseIntPipe) target_user_id: number) 
     {
         return this.usersService.getDetailedProfileForAdmin(target_user_id)
+    }
+
+
+    @Patch(':id')
+    @UseGuards(AdminSessionGuard)
+    async updateUser(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() data: UpdateUserDto,
+    ) {
+        return this.usersService.updateUserByAdmin(id, data)
     }
 
     /**

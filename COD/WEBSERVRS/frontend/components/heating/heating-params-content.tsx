@@ -12,15 +12,6 @@ import { ApiError } from "@/lib/types/api";
 import type { Room } from "@/lib/types/room";
 import type { TempProgram } from "@/lib/types/temp-program";
 
-const SAMPLING_OPTIONS = [
-  { label: "1 minut", value: 1 },
-  { label: "5 minute", value: 5 },
-  { label: "10 minute", value: 10 },
-  { label: "15 minute", value: 15 },
-  { label: "30 minute", value: 30 },
-  { label: "60 minute", value: 60 },
-];
-
 type HeatingParamsContentProps = {
   roomId: number;
 };
@@ -29,7 +20,6 @@ export function HeatingParamsContent({ roomId }: HeatingParamsContentProps) {
   const [room, setRoom] = useState<Room | null>(null);
   const [programs, setPrograms] = useState<TempProgram[]>([]);
   const [offset, setOffset] = useState("");
-  const [samplingMinutes, setSamplingMinutes] = useState(5);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +38,6 @@ export function HeatingParamsContent({ roomId }: HeatingParamsContentProps) {
       setRoom(roomData);
       setPrograms(programsData);
       setOffset(String(Number(roomData.offset_value)));
-      setSamplingMinutes(roomData.sampling_minutes ?? 5);
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "Nu s-au putut încărca setările camerei.",
@@ -80,10 +69,8 @@ export function HeatingParamsContent({ roomId }: HeatingParamsContentProps) {
     setSuccess(null);
     setError(null);
     try {
-      const updated = await getApiClient().updateRoom(roomId, {
-        offset_value: Number(offset),
-        sampling_minutes: samplingMinutes,
-      });
+      await getApiClient().updateRoomOffset(roomId, Number(offset));
+      const updated = await getApiClient().getRoom(roomId);
       setRoom(updated);
       setSuccess("Setările au fost salvate.");
     } catch (err) {
@@ -167,20 +154,6 @@ export function HeatingParamsContent({ roomId }: HeatingParamsContentProps) {
                   <p className="mt-1 text-xs text-[#b42318]">{offsetError}</p>
                 )}
               </div>
-            </HeatingFormRow>
-
-            <HeatingFormRow label="Interval măsurare">
-              <select
-                value={samplingMinutes}
-                onChange={(e) => setSamplingMinutes(Number(e.target.value))}
-                className="w-full max-w-xs rounded border border-[#c3c6d7] bg-white px-3 py-2 text-sm md:w-[284px]"
-              >
-                {SAMPLING_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
             </HeatingFormRow>
 
             <div className="mt-6 flex justify-end gap-2 border-t border-[#c3c6d7] pt-4">

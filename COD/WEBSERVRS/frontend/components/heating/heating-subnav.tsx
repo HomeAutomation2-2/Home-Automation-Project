@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 const LINKS = [
   { href: "/heating", label: "Prezentare", exact: true },
   { href: "/heating/programs", label: "Programe", exact: false },
-  { href: "/heating/override", label: "Forțare", exact: false },
 ] as const;
 
 export function HeatingSubNav() {

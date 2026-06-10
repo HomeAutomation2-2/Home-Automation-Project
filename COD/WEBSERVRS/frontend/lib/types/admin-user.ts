@@ -33,16 +33,3 @@ export type SuspendUserResponse = {
   message: string;
   is_suspended: boolean;
 };
-
-/** GET /users/:id/device-binding */
-export type DeviceBindingStatus = {
-  bound: boolean;
-  device_label: string | null;
-  last_sync: string | null;
-};
-
-/** POST /users/:id/device-binding */
-export type InitiateDeviceBindingResponse = {
-  pairing_token: string;
-  expires_at: string;
-};

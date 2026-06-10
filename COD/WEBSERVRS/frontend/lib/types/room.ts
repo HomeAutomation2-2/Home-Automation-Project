@@ -5,5 +5,4 @@ export type Room = {
   offset_value: number;
   current_temp: number;
   temp_program_id: number | null;
-  sampling_minutes: number;
 };

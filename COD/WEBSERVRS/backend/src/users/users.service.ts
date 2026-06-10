@@ -4,7 +4,8 @@ import { User } from './entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import * as bcrypt from "bcrypt"
 import { CreateUserDto } from './dto/create-user.dto';
-import { LoginUserDto } from './dto/login-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponse } from './dto/user-response.dto';
 import { AccessEvent } from '../events/entities/access-event.entity';
 import { UnifiedLog } from './dto/unified-log.dto';
@@ -80,6 +81,79 @@ export class UsersService
     }
 
 
+    async updateProfile(userId: number, data: UpdateProfileDto): Promise<UserResponse>
+    {
+        const user = await this.user_repository.findOne({ where: { id: userId } })
+        if (!user)
+            throw new NotFoundException('User not found')
+
+        if (data.phone !== undefined && data.phone !== user.phone)
+        {
+            const phoneTaken = await this.user_repository.findOne({ where: { phone: data.phone } })
+            if (phoneTaken)
+                throw new ConflictException('A user with this phone number already exists')
+            user.phone = data.phone
+        }
+
+        if (data.firstName !== undefined)
+            user.firstName = data.firstName
+        if (data.lastName !== undefined)
+            user.lastName = data.lastName
+
+        if (data.password_plaintext !== undefined)
+        {
+            const salt = await bcrypt.genSalt()
+            user.passwordHash = await bcrypt.hash(data.password_plaintext, salt)
+        }
+
+        const saved = await this.user_repository.save(user)
+        const { passwordHash, sessions, ...safeUser } = saved
+        return safeUser as UserResponse
+    }
+
+
+    async updateUserByAdmin(userId: number, data: UpdateUserDto)
+    {
+        const user = await this.user_repository.findOne({ where: { id: userId } })
+        if (!user)
+            throw new NotFoundException(`User with ID ${userId} not found`)
+
+        if (data.phone !== undefined && data.phone !== user.phone)
+        {
+            const phoneTaken = await this.user_repository.findOne({ where: { phone: data.phone } })
+            if (phoneTaken)
+                throw new ConflictException('A user with this phone number already exists')
+            user.phone = data.phone
+        }
+
+        if (data.firstName !== undefined)
+            user.firstName = data.firstName
+        if (data.lastName !== undefined)
+            user.lastName = data.lastName
+        if (data.isAdmin !== undefined)
+            user.isAdmin = data.isAdmin
+
+        if (data.password_plaintext !== undefined)
+        {
+            const salt = await bcrypt.genSalt()
+            user.passwordHash = await bcrypt.hash(data.password_plaintext, salt)
+        }
+
+        const saved = await this.user_repository.save(user)
+        this.devicesService.pushBtCodes()
+
+        return {
+            first_name: saved.firstName,
+            last_name: saved.lastName,
+            phone: saved.phone,
+            cnp: saved.cnp,
+            is_home: saved.isHome,
+            is_admin: saved.isAdmin,
+            is_suspended: saved.isSuspended,
+        }
+    }
+
+
     async getFormattedProfile(userId: number) 
     {
         const user = await this.user_repository.findOne({ where: { id: userId } });
@@ -151,6 +225,8 @@ export class UsersService
                 id: user.id,
                 first_name: user.firstName,
                 last_name: user.lastName,
+                phone: user.phone,
+                is_admin: user.isAdmin,
                 is_home: user.isHome,
                 is_suspended: user.isSuspended,
                 last_access_event: lastEventText
@@ -270,6 +346,7 @@ export class UsersService
         return {
             first_name: user.firstName,
             last_name: user.lastName,
+            phone: user.phone,
             cnp: user.cnp,
             is_home: user.isHome,
             is_admin: user.isAdmin,

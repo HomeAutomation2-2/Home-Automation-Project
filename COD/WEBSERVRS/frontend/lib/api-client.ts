@@ -8,16 +8,18 @@ import type { UserMe, UpdateProfileRequest } from "@/lib/types/user-me";
 import type {
   AdminUserDetail,
   CreateUserRequest,
-  DeviceBindingStatus,
-  InitiateDeviceBindingResponse,
   SuspendUserResponse,
   UpdateUserRequest,
 } from "@/lib/types/admin-user";
 import type { UserPresenceItem } from "@/lib/types/user-presence";
-import type { HeatingOverrideStatus } from "@/lib/types/heating-override";
 
 type NestErrorBody = {
   message?: string | string[];
+};
+
+type TemperatureReading = {
+  value: number;
+  occuredAt: string;
 };
 
 /**
@@ -114,11 +116,12 @@ export class ApiClient {
     });
   }
 
-  /**
-   * Viitor: GET /temperature-readings?room_id=&from=&to=
-   * Modulul Nest există; rutele HTTP nu sunt încă implementate.
-   */
-  // async getTemperatureReadings(...) — de adăugat când backend expune endpoint-ul
+  /** GET /temperature-readings?room_id= */
+  async getTemperatureReadings(roomId: number): Promise<TemperatureReading[]> {
+    return this.request<TemperatureReading[]>(
+      `/temperature-readings?room_id=${encodeURIComponent(String(roomId))}`,
+    );
+  }
 
   /** GET /heating-programs */
   async getHeatingPrograms(): Promise<TempProgram[]> {
@@ -159,54 +162,20 @@ export class ApiClient {
     });
   }
 
-  /** PATCH /rooms/:id */
-  async updateRoom(
+  /** PATCH /rooms/:id/offset */
+  async updateRoomOffset(
     id: number,
-    body: { offset_value?: number; sampling_minutes?: number },
-  ): Promise<Room> {
-    return this.request<Room>(`/rooms/${id}`, {
+    offset: number,
+  ): Promise<{ success: boolean; message: string }> {
+    return this.request<{ success: boolean; message: string }>(`/rooms/${id}/offset`, {
       method: "PATCH",
-      body: JSON.stringify(body),
-    });
-  }
-
-  /** PATCH /heating-programs/:id */
-  async updateHeatingProgram(
-    id: number,
-    body: { name?: string; schedule?: TempProgram["schedule"] },
-  ): Promise<TempProgram> {
-    return this.request<TempProgram>(`/heating-programs/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(body),
-    });
-  }
-
-  /** GET /heating/override */
-  async getHeatingOverride(): Promise<HeatingOverrideStatus> {
-    return this.request<HeatingOverrideStatus>("/heating/override");
-  }
-
-  /** POST /heating/override */
-  async activateHeatingOverride(body: {
-    program_id: number;
-    duration_minutes: number;
-  }): Promise<HeatingOverrideStatus> {
-    return this.request<HeatingOverrideStatus>("/heating/override", {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-  }
-
-  /** DELETE /heating/override */
-  async deactivateHeatingOverride(): Promise<HeatingOverrideStatus> {
-    return this.request<HeatingOverrideStatus>("/heating/override", {
-      method: "DELETE",
+      body: JSON.stringify({ offset }),
     });
   }
 
   /** POST /users/register (admin) */
-  async registerUser(body: CreateUserRequest): Promise<{ id: number }> {
-    return this.request<{ id: number }>("/users/register", {
+  async registerUser(body: CreateUserRequest): Promise<AdminUserDetail> {
+    return this.request<AdminUserDetail>("/users/register", {
       method: "POST",
       body: JSON.stringify(body),
     });
@@ -225,29 +194,17 @@ export class ApiClient {
     });
   }
 
+  /** DELETE /users/:id (admin) */
+  async deleteUser(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/users/${id}`, {
+      method: "DELETE",
+    });
+  }
+
   /** PATCH /users/:id/suspend — comută suspendat/activ */
   async suspendUser(id: number): Promise<SuspendUserResponse> {
     return this.request<SuspendUserResponse>(`/users/${id}/suspend`, {
       method: "PATCH",
-    });
-  }
-
-  /** GET /users/:id/device-binding (admin) */
-  async getDeviceBinding(id: number): Promise<DeviceBindingStatus> {
-    return this.request<DeviceBindingStatus>(`/users/${id}/device-binding`);
-  }
-
-  /** POST /users/:id/device-binding — generează token de asociere */
-  async initiateDeviceBinding(id: number): Promise<InitiateDeviceBindingResponse> {
-    return this.request<InitiateDeviceBindingResponse>(`/users/${id}/device-binding`, {
-      method: "POST",
-    });
-  }
-
-  /** DELETE /users/:id/device-binding */
-  async revokeDeviceBinding(id: number): Promise<void> {
-    return this.request<void>(`/users/${id}/device-binding`, {
-      method: "DELETE",
     });
   }
 
