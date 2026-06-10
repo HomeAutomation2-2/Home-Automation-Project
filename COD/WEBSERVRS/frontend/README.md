@@ -14,7 +14,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Backend API: `http://localhost:3090` — Frontend dev: [http://localhost:3080](http://localhost:3080) (porturile 3000–3079 sunt blocate pe Windows/Hyper-V).
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
