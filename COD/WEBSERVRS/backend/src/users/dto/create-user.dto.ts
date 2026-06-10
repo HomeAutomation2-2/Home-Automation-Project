@@ -25,4 +25,10 @@ export class CreateUserDto
 
     @IsBoolean()
     isAdmin: boolean = false
+
+    @IsBoolean()
+    isChild: boolean = false
+
+    @IsBoolean()
+    allowReturnAfterMidnight: boolean = false
 }

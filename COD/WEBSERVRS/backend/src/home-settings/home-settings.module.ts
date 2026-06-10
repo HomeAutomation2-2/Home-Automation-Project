@@ -5,10 +5,9 @@ import { HomeSettingsController } from './home-settings.controller';
 import { HomeSettings } from './entities/home-settings.entity';
 import { UsersModule } from '../users/users.module';
 import { SessionGuard } from '../users/guards/session.guard';
+import { AdminSessionGuard } from '../users/guards/admin-session.guard';
 import { AuthSession } from '../auth-sessions/entities/auth-session.entity';
 import { DevicesModule } from '../devices/device.module';
-
-
 
 @Module({
     imports: [
@@ -17,6 +16,6 @@ import { DevicesModule } from '../devices/device.module';
         DevicesModule
     ],
     controllers: [HomeSettingsController],
-    providers: [HomeSettingsService, SessionGuard],
+    providers: [HomeSettingsService, SessionGuard, AdminSessionGuard],
 })
 export class HomeSettingsModule {}

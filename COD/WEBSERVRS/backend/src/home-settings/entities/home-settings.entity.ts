@@ -19,4 +19,7 @@ export class HomeSettings
 
     @Column({ name: "boiler_state", default: false })
     boilerState!: boolean;
+
+    @Column({ name: 'fire_alert_celsius', type: 'decimal', precision: 4, scale: 2, default: 45.00 })
+    fireAlertCelsius!: number;
 }

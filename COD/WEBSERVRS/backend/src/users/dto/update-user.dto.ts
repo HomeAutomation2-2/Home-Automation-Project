@@ -24,6 +24,14 @@ export class UpdateUserDto
     isAdmin?: boolean;
 
     @IsOptional()
+    @IsBoolean()
+    isChild?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    allowReturnAfterMidnight?: boolean;
+
+    @IsOptional()
     @IsString()
     @Length(6, 120, { message: "Password has to be at least 6 characters" })
     password_plaintext?: string;

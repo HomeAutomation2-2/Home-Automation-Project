@@ -37,6 +37,12 @@ export class User
     @Column({ name: "is_home", default: false })
     isHome!: boolean
 
+    @Column({ name: "is_child", default: false })
+    isChild!: boolean
+
+    @Column({ name: "allow_return_after_midnight", default: false })
+    allowReturnAfterMidnight!: boolean
+
     @Column({ name: "bt_code_hash", length: 255, nullable: true })
     btCodeHash!: string
 

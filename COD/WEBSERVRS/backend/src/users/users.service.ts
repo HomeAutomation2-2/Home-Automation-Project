@@ -132,6 +132,10 @@ export class UsersService
             user.lastName = data.lastName
         if (data.isAdmin !== undefined)
             user.isAdmin = data.isAdmin
+        if (data.isChild !== undefined)
+            user.isChild = data.isChild
+        if (data.allowReturnAfterMidnight !== undefined)
+            user.allowReturnAfterMidnight = data.allowReturnAfterMidnight
 
         if (data.password_plaintext !== undefined)
         {
@@ -150,6 +154,8 @@ export class UsersService
             is_home: saved.isHome,
             is_admin: saved.isAdmin,
             is_suspended: saved.isSuspended,
+            is_child: saved.isChild,
+            allow_return_after_midnight: saved.allowReturnAfterMidnight,
         }
     }
 
@@ -350,7 +356,9 @@ export class UsersService
             cnp: user.cnp,
             is_home: user.isHome,
             is_admin: user.isAdmin,
-            is_suspended: user.isSuspended
+            is_suspended: user.isSuspended,
+            is_child: user.isChild,
+            allow_return_after_midnight: user.allowReturnAfterMidnight,
         };
     }
 

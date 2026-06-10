@@ -26,7 +26,10 @@ export class HomeSettingsService
             settings = this.settingsRepository.create({
                 id: 1,
                 hysteresis: 0.00,
-                antifreezeTemp: 7.00
+                antifreezeTemp: 7.00,
+                samplingPeriod: 60,
+                boilerState: false,
+                fireAlertCelsius: 45.00,
             })
 
             await this.settingsRepository.save(settings)
@@ -36,24 +39,42 @@ export class HomeSettingsService
     }
 
 
-    async updateSettings(hysteresis: number, antifreezeTemp: number, samplingPeriod: number): Promise<HomeSettings> 
+    async updateSettings(data: {
+        hysteresis?: number;
+        antifreezeTemp?: number;
+        samplingPeriod?: number;
+        fireAlertCelsius?: number;
+    }): Promise<HomeSettings>
     {
         let settings = await this.settingsRepository.findOne({ where: { id: 1 } })
 
-        if (!settings) 
+        if (!settings)
         {
-            settings = this.settingsRepository.create({ id: 1, hysteresis, antifreezeTemp, samplingPeriod })
-        } 
-        else 
+            settings = this.settingsRepository.create({
+                id: 1,
+                hysteresis: data.hysteresis ?? 0.00,
+                antifreezeTemp: data.antifreezeTemp ?? 7.00,
+                samplingPeriod: data.samplingPeriod ?? 60,
+                boilerState: false,
+                fireAlertCelsius: data.fireAlertCelsius ?? 45.00,
+            })
+        }
+        else
         {
-            settings.hysteresis     = hysteresis
-            settings.antifreezeTemp = antifreezeTemp
-            settings.samplingPeriod = samplingPeriod
+            if (data.hysteresis !== undefined)
+                settings.hysteresis = data.hysteresis
+            if (data.antifreezeTemp !== undefined)
+                settings.antifreezeTemp = data.antifreezeTemp
+            if (data.samplingPeriod !== undefined)
+                settings.samplingPeriod = data.samplingPeriod
+            if (data.fireAlertCelsius !== undefined)
+                settings.fireAlertCelsius = data.fireAlertCelsius
         }
 
         const saved = await this.settingsRepository.save(settings)
 
-        this.tempScheduler.restartInterval(saved.samplingPeriod)
+        if (data.samplingPeriod !== undefined)
+            this.tempScheduler.restartInterval(saved.samplingPeriod)
 
         return saved
     }
