@@ -4,9 +4,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AccessEvent } from './entities/access-event.entity';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
-export class EventsService 
+export class EventsService
 {
     constructor(
         @InjectRepository(AccessEvent)
@@ -14,6 +15,8 @@ export class EventsService
 
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
+
+        private readonly notificationsService: NotificationsService,
     ) {}
 
 
@@ -29,16 +32,20 @@ export class EventsService
 
         let lastId: number | null = null
 
-        for (const e of events) 
+        for (const e of events)
         {
+            const occurredAt = new Date(e.occurred_at)
             const event = this.access_events_repository.create({
-                id: userId,
+                userId,
                 direction: e.direction,
-                occurredAt: new Date(e.occurred_at),
+                occurredAt,
             })
 
             const saved = await this.access_events_repository.save(event)
             lastId = saved.id
+
+            if (e.direction === 'in')
+                await this.notificationsService.handleChildEntry(userId, occurredAt)
         }
 
         const last = events[events.length - 1]

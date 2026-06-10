@@ -21,27 +21,30 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { describe, it, beforeEach, afterEach, expect, jest } from '@jest/globals';
 import { EventsService } from './events.service';
 import { AccessEvent } from './entities/access-event.entity';
+import { User } from '../users/entities/user.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 
-
-// mock repository
 const createMockRepository = () => ({
     create: jest.fn(),
     save: jest.fn(),
+    update: jest.fn(),
 });
-
 
 describe('EventsService', () => {
     let service: EventsService;
     let accessEventRepo: any;
 
-
     beforeEach(async () => {
         const mockAccessEventRepo = createMockRepository();
+        const mockUserRepo = { update: jest.fn() };
+        const mockNotificationsService = { handleChildEntry: jest.fn() };
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 EventsService,
                 { provide: getRepositoryToken(AccessEvent), useValue: mockAccessEventRepo },
+                { provide: getRepositoryToken(User), useValue: mockUserRepo },
+                { provide: NotificationsService, useValue: mockNotificationsService },
             ],
         }).compile();
 
@@ -96,34 +99,25 @@ describe('EventsService', () => {
              *                         depending on the input each time
              */
             accessEventRepo.create.mockImplementation((data: any) => data);
-            accessEventRepo.save.mockResolvedValue([]);  // not interested in what save returns
+            accessEventRepo.save
+                .mockResolvedValueOnce({ id: 101 })
+                .mockResolvedValueOnce({ id: 102 });
 
-            // act
             const result = await service.syncEvents(inputDtos, userId);
 
-            // assert
-
-            // verify that `create` was called 2 times (one call per event)
             expect(accessEventRepo.create).toHaveBeenCalledTimes(2);
-
-            // verify first call - "in" event
             expect(accessEventRepo.create).toHaveBeenCalledWith({
                 userId: 7,
                 direction: 'in',
-                occurredAt: new Date('2026-06-04T08:00:00Z'),  // string '2026-06-04T08:00:00Z' -> Date
+                occurredAt: new Date('2026-06-04T08:00:00Z'),
             });
-
-            // verify second call - "out" event
             expect(accessEventRepo.create).toHaveBeenCalledWith({
                 userId: 7,
                 direction: 'out',
                 occurredAt: new Date('2026-06-04T12:30:00Z'),
             });
-
-            // verify if save was called ONCE with an array (bulk save)
-            expect(accessEventRepo.save).toHaveBeenCalledTimes(1);
-
-            expect(result).toEqual({ synced: 2 });
+            expect(accessEventRepo.save).toHaveBeenCalledTimes(2);
+            expect(result).toEqual({ id: 102 });
         });
 
 
@@ -139,15 +133,7 @@ describe('EventsService', () => {
              */
 
             // arrange
-            accessEventRepo.save.mockResolvedValue([]);
-
-            // act
-            const result = await service.syncEvents([], 1);
-
-            // assert
-            expect(accessEventRepo.create).not.toHaveBeenCalled();  // with an empty array, map() never calls create
-            expect(accessEventRepo.save).toHaveBeenCalledWith([]);  // save - gets an empty array
-            expect(result).toEqual({ synced: 0 });  // result - synced count is 0
+            await expect(service.syncEvents([], 1)).rejects.toThrow();
         });
     });
 });

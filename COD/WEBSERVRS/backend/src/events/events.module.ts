@@ -10,20 +10,20 @@ import { SessionGuard } from '../users/guards/session.guard';
 import { UsersModule } from '../users/users.module';
 import { AuthSession } from '../auth-sessions/entities/auth-session.entity';
 import { User } from '../users/entities/user.entity';
-
-
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      AccessEvent,
-      LightEvent,
-      BoilerEvent,
-      AuthSession,
-      User
-    ]),
-    UsersModule,
-  ],
+    imports: [
+        TypeOrmModule.forFeature([
+            AccessEvent,
+            LightEvent,
+            BoilerEvent,
+            AuthSession,
+            User
+        ]),
+        UsersModule,
+        NotificationsModule,
+    ],
   controllers: [EventsController],
   providers: [
     EventsService,

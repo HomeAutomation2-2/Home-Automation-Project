@@ -11,6 +11,7 @@ import { TemperatureReading } from '../temperature-readings/entities/temperature
 import { BoilerEvent } from '../events/entities/boiler-event.entity';
 import { Period, TimeSlot } from '../temperature-programs/entities/temperature-program.entity';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { NotificationsService } from '../notifications/notifications.service';
 
 
 
@@ -43,6 +44,8 @@ export class DevicesService
 
         @InjectRepository(BoilerEvent)
         private boilerEventsRepository: Repository<BoilerEvent>,
+
+        private readonly notificationsService: NotificationsService,
     ) {}
 
 
@@ -107,9 +110,12 @@ export class DevicesService
     }
 
 
-    async updateSensorData(dto: SensorDataDto): Promise<void> 
+    async updateSensorData(dto: SensorDataDto): Promise<void>
     {
-        for (const reading of dto.rooms) 
+        const settings = await this.settingsRepository.findOne({ where: { id: 1 } })
+        const fireThreshold = Number(settings?.fireAlertCelsius ?? 45)
+
+        for (const reading of dto.rooms)
         {
             await this.roomsRepository.update(reading.id, {
                 current_temp: reading.current_temp,
@@ -120,18 +126,29 @@ export class DevicesService
                 loopId: reading.id,
                 value:  reading.current_temp,
             })
+
+            const room = await this.roomsRepository.findOne({ where: { id: reading.id } })
+            if (room)
+            {
+                await this.notificationsService.maybeCreateTemperatureAlert(
+                    room.id,
+                    room.name,
+                    reading.current_temp,
+                    fireThreshold,
+                )
+            }
         }
 
-        const settings = await this.settingsRepository.findOne({ where: {} })
-        const previousBoilerState = settings?.boilerState ?? false
+        const settingsForBoiler = settings ?? await this.settingsRepository.findOne({ where: {} })
+        const previousBoilerState = settingsForBoiler?.boilerState ?? false
         const newBoilerState = dto.boiler
 
         if (newBoilerState !== previousBoilerState) 
         {
-            if (settings) 
+            if (settingsForBoiler)
             {
-                settings.boilerState = newBoilerState;
-                await this.settingsRepository.save(settings)
+                settingsForBoiler.boilerState = newBoilerState;
+                await this.settingsRepository.save(settingsForBoiler)
             } 
             else 
             {
